@@ -1,4 +1,4 @@
-require 'puzzle01'
+require 'puzzle_day01'
 
 describe '#count_depth_increase' do
   it 'returns 0 when given an empty array' do
