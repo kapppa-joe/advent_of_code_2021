@@ -2,3 +2,5 @@ Lint/UselessAssignment:
   Enabled: false
 Metrics/BlockLength:
   IgnoredMethods: ['describe', 'context']
+Style/EachWithObject:
+  Enabled: false
