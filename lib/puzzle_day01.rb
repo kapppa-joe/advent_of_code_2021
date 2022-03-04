@@ -1,5 +1,3 @@
-require_relative './utils'
-
 def count_depth_increase(array)
   0.step(array.length - 2).count do |i|
     array[i + 1] > array[i]
@@ -18,6 +16,7 @@ def count_increase_by_sliding_window(array)
 end
 
 if __FILE__ == $PROGRAM_NAME
+  require_relative './utils'
   input_array = read_input_file(1, 'integer')
   puts "solution for part A: #{count_depth_increase(input_array)}"
   puts "solution for part B: #{count_increase_by_sliding_window(input_array)}"
