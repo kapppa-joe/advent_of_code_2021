@@ -1,60 +1,60 @@
 require 'puzzle_day02'
 
-describe '#calculate_position' do
+describe '#calculate_position_prototype' do
   it 'returns {depth: 0, horizontal: 0} when given an empty array' do
     input = []
     expected_output = { depth: 0, horizontal: 0 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it 'returns {depth: 0, horizontal: 1} when given array ["forward 1"]' do
     input = ['forward 1']
     expected_output = { depth: 0, horizontal: 1 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it 'returns {depth: 1, horizontal: 0} when given array ["down 1"]' do
     input = ['down 1']
     expected_output = { depth: 1, horizontal: 0 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it 'returns {depth: 0, horizontal: 2} when given array ["forward 2"]' do
     input = ['forward 2']
     expected_output = { depth: 0, horizontal: 2 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it 'returns {depth: 1, horizontal: 1} when given array ["forward 1", "down 1"]' do
     input = ['forward 1', 'down 1']
     expected_output = { depth: 1, horizontal: 1 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it 'returns {depth: 1, horizontal: 1} when given array ["down 1", "forward 1"]' do
     input = ['forward 1', 'down 1']
     expected_output = { depth: 1, horizontal: 1 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it 'returns {depth: 0, horizontal: 0} when given array ["down 1", "up 1"]' do
     input = ['down 1', 'up 1']
     expected_output = { depth: 0, horizontal: 0 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   it "returns {depth: 3, horizontal: 0} when given array ['down 1', 'down 2]" do
     input = ['down 1', 'down 1']
     expected_output = { depth: 2, horizontal: 0 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
   end
 
   describe 'can handle longer commands correctly' do
@@ -68,13 +68,50 @@ describe '#calculate_position' do
     ]
     test_cases.each do |input, expected_output|
       it "returns #{expected_output} when given #{input}" do
-        expect(calculate_position(input)).to eql expected_output
+        expect(calculate_position_prototype(input)).to eql expected_output
       end
     end
   end
 end
 
-describe '#calculate_position acceptance test' do
+describe '#final_position' do
+  it 'returns {depth: 0, horizontal: 0} when given an empty array' do
+    input = []
+    expected_output = { depth: 0, horizontal: 0 }
+
+    expect(final_position(input)).to eql expected_output
+  end
+
+  it 'calculates the horizontal position' do
+    input = ['forward 1', 'forward 5', 'forward 10']
+    expected_output = { depth: 0, horizontal: 16 }
+
+    expect(final_position(input)).to eql expected_output
+  end
+
+  it "returns {depth: 1, horizontal: 1} when given array ['down 1', 'forward 1']" do
+    input = ['down 1', 'forward 1']
+    expected_output = { depth: 1, horizontal: 1 }
+
+    expect(final_position(input)).to eql expected_output
+  end
+
+  it "returns {depth: 0, horizontal: 1} when given array ['forward 1', 'down 1']" do
+    input = ['forward 1', 'down 1']
+    expected_output = { depth: 0, horizontal: 1 }
+
+    expect(final_position(input)).to eql expected_output
+  end
+
+  it "handles 'up' commands correctly" do
+    input = ['down 2', 'up 1', 'forward 1']
+    expected_output = { depth: 1, horizontal: 1 }
+
+    expect(final_position(input)).to eql expected_output
+  end
+end
+
+describe '#calculate_position_prototype acceptance test' do
   it 'solves the example case correctly' do
     input = [
       'forward 5',
@@ -86,6 +123,22 @@ describe '#calculate_position acceptance test' do
     ]
     expected_output = { horizontal: 15, depth: 10 }
 
-    expect(calculate_position(input)).to eql expected_output
+    expect(calculate_position_prototype(input)).to eql expected_output
+  end
+end
+
+describe '#final_position acceptance test' do
+  it 'solves the example case correctly' do
+    input = [
+      'forward 5',
+      'down 5',
+      'forward 8',
+      'up 3',
+      'down 8',
+      'forward 2'
+    ]
+    expected_output = { horizontal: 15, depth: 60 }
+
+    expect(final_position(input)).to eql expected_output
   end
 end
