@@ -128,6 +128,16 @@ describe Bingo do
       expect(bingo.find_part_a_solution).to eql 4512
     end
   end
+
+  describe '#find_part_b_solution' do
+    it 'solve the example case correctly' do
+      expected_output = {
+        last_winning_board: 1,
+        score: 1924
+      }
+      expect(bingo.find_part_b_solution).to eql expected_output
+    end
+  end
 end
 
 describe BingoBoard do

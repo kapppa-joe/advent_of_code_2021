@@ -1,10 +1,11 @@
 class Bingo
-  attr_reader :boards
+  attr_reader :boards, :boards_won
 
   def initialize(input_text)
     @bingo_numbers, board_data_array = parse_input_text(input_text)
     @next_number_index = 0
     @boards = board_data_array.map { |board_data| BingoBoard.new(board_data) }
+    @boards_won = []
   end
 
   def parse_numbers(num_string)
@@ -28,16 +29,15 @@ class Bingo
     [bingo_numbers, bingo_boards]
   end
 
-  def boards_won
-    (0...@boards.length).filter do |board_number|
-      @boards[board_number].has_won?
-    end
-  end
-
   def tick
     next_number = @bingo_numbers.fetch(@next_number_index)
-    @boards.each do |board|
+    @boards.each_with_index do |board, index|
+      next if @boards_won.include?(index)
+
       board.mark_number(next_number)
+      if board.has_won?
+        @boards_won << index
+      end
     end
     @next_number_index += 1
   end
@@ -49,6 +49,14 @@ class Bingo
   def find_part_a_solution
     tick while boards_won.empty?
     board_score(boards_won.first)
+  end
+
+  def find_part_b_solution
+    tick while @next_number_index < @bingo_numbers.length
+    {
+      last_winning_board: boards_won.last,
+      score: board_score(boards_won.last)
+    }
   end
 end
 
@@ -101,6 +109,6 @@ if __FILE__ == $PROGRAM_NAME
   part_a_solution = Bingo.new(input_array).find_part_a_solution
   puts "solution for part A: #{part_a_solution}"
 
-  # part_b_solution = find_life_support_rating(input_array)
-  # puts "solution for part B: #{part_b_solution}"
+  part_b_solution = Bingo.new(input_array).find_part_b_solution
+  puts "solution for part B: #{part_b_solution}"
 end
