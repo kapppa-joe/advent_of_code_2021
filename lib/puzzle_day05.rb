@@ -1,5 +1,5 @@
 
-def parse_input(string)
+def parse_input_day_05(string)
   pattern = /(\d+),(\d+) -> (\d+),(\d+)/
   match = pattern.match(string)
   return [] unless match && match.size == 5
@@ -49,7 +49,7 @@ end
 
 def count_overlaps(input_array, count_diagonals: false)
   vents = input_array
-          .map { |string| parse_input(string) }
+          .map { |string| parse_input_day_05(string) }
   unless count_diagonals
     vents.filter! { |vent| vertical?(vent) || horizontal?(vent) }
   end

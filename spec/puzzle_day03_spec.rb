@@ -1,9 +1,5 @@
 require 'puzzle_day03'
 
-# ======================================
-#                PART A
-# ======================================
-
 describe '#analyse_diagnostic_report' do
   it 'solve the example correctly' do
     input = %w[00100 11110 10110 10111 10101 01111
@@ -147,51 +143,6 @@ describe '#most_frequent_single_bit' do
     end
   end
 end
-
-# describe '#find_mode' do
-#   it 'return nil if given an empty array' do
-#     expect(find_mode([])).to eql nil
-#   end
-
-#   it 'return 1 if given array [1]' do
-#     input = [1]
-#     expected_output = 1
-
-#     expect(find_mode(input)).to eql expected_output
-#   end
-
-#   it 'return 2 if given array [2]' do
-#     input = [2]
-#     expected_output = 2
-
-#     expect(find_mode(input)).to eql expected_output
-#   end
-
-#   it 'return 2 if given array [1, 2, 2]' do
-#     input = [1, 2, 2]
-#     expected_output = 2
-
-#     expect(find_mode(input)).to eql expected_output
-#   end
-
-#   it 'return 1 if given array [2, 2, 1]' do
-#     input = [2, 2, 1]
-#     expected_output = 2
-
-#     expect(find_mode(input)).to eql expected_output
-#   end
-
-#   it 'return the mode (most frequent element) in an array' do
-#     input = [3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 2, 2, 1]
-#     expected_output = 1
-
-#     expect(find_mode(input)).to eql expected_output
-#   end
-# end
-
-# ======================================
-#                PART B
-# ======================================
 
 describe '#find_life_support_rating' do
   it 'solve the example correctly' do
