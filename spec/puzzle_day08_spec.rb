@@ -82,7 +82,176 @@ describe 'Day08' do
     end
   end
 
+  describe 'sum_all_decoded_outputs acceptance test' do
+    it 'can solve the larger example case correctly' do
+      input = example_input_day_08
+      expected_output = 61229
+      expect(Day08.sum_all_decoded_outputs(input)).to eql expected_output
+    end
+  end
+
   describe Day08::SegmentDisplay do
-    
+    before(:all) do
+      @example_answer = {
+        8 => 'acedgfb',
+        5 => 'cdfbe',
+        2 => 'gcdfa',
+        3 => 'fbcad',
+        7 => 'dab',
+        9 => 'cefabd',
+        6 => 'cdfgeb',
+        4 => 'eafb',
+        0 => 'cagedb',
+        1 => 'ab'
+      }
+    end
+
+    before(:each) do
+      input = 'acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf'
+      @segment_display = described_class.new(input)
+    end
+
+    describe '#zero' do
+      it 'return the segment pattern for number zero' do
+        expect(@segment_display.zero).to eql @example_answer[0]
+      end
+    end
+
+    describe '#one' do
+      it 'return the segment pattern for number one' do
+        expect(@segment_display.one).to eql @example_answer[1]
+      end
+
+      it 'identify the pattern for one in different cases' do
+        input = 'edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc'
+        expected_output = 'gc'
+
+        expect(described_class.new(input).one).to eql expected_output
+      end
+    end
+
+    describe '#two' do
+      it 'return the segment pattern for number two' do
+        expect(@segment_display.two).to eql @example_answer[2]
+      end
+    end
+
+    describe '#three' do
+      it 'return the segment pattern for number three' do
+        expect(@segment_display.three).to eql @example_answer[3]
+      end
+    end
+
+    describe '#four' do
+      it 'return the segment pattern for number four' do
+        expect(@segment_display.four).to eql @example_answer[4]
+
+        input = 'edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc'
+        expected_output = 'gfec'
+
+        expect(described_class.new(input).four).to eql expected_output
+      end
+    end
+
+    describe '#five' do
+      it 'return the segment pattern for number five' do
+        expect(@segment_display.five).to eql @example_answer[5]
+      end
+    end
+
+    describe '#six' do
+      it 'return the segment pattern for number six' do
+        expect(@segment_display.six).to eql @example_answer[6]
+      end
+    end
+
+    describe '#seven' do
+      it 'return the segment pattern for number seven' do
+        expect(@segment_display.seven).to eql @example_answer[7]
+
+        input = 'edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc'
+        expected_output = 'cbg'
+
+        expect(described_class.new(input).seven).to eql expected_output
+      end
+    end
+
+    describe '#eight' do
+      it 'return the segment pattern for number eight' do
+        expect(@segment_display.eight).to eql @example_answer[8]
+
+        input = 'edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc'
+        expected_output = 'gcadebf'
+
+        expect(described_class.new(input).eight).to eql expected_output
+      end
+    end
+
+    describe '#nine' do
+      it 'return the segment pattern for number nine' do
+        expect(@segment_display.nine).to eql @example_answer[9]
+      end
+    end
+
+    describe '#match_pattern' do
+      it 'return true if two strings are the same' do
+        input = %w[ab ab]
+        expected_output = true
+
+        expect(@segment_display.match_pattern(*input)).to eql expected_output
+      end
+
+      it 'return false if string a gots a char that string b doesnt have' do
+        input = %w[abc ab]
+        expected_output = false
+
+        expect(@segment_display.match_pattern(*input)).to eql expected_output
+      end
+
+      it 'return false if string b gots a char that string a doesnt have' do
+        input = %w[ac abc]
+        expected_output = false
+
+        expect(@segment_display.match_pattern(*input)).to eql expected_output
+      end
+
+      it 'return true if two strings have the same set of chars but in different order' do
+        input = %w[abcde ceabd]
+        expected_output = true
+
+        expect(@segment_display.match_pattern(*input)).to eql expected_output
+      end
+    end
+
+    describe '#to_pattern' do
+      it 'return the pattern of the given digit' do
+        (0..9).each do |digit|
+          expect(@segment_display.to_pattern(digit)).to eql @example_answer[digit]
+        end
+      end
+    end
+
+    describe '#decode_output acceptance test' do
+      it 'can solve the 1st example case correctly' do
+        expect(@segment_display.decode_output).to eql 5353
+      end
+
+      describe 'it can solve all the larger example cases correctly' do
+        example_cases_answers = [
+          8394, 9781, 1197, 9361, 4873,
+          8418, 4548, 1625, 8717, 4315
+        ]
+
+        example_input_day_08.each_with_index do |input_string, index|
+          it "case ##{index}, input: #{input_string}" do
+            input = input_string
+            expected_output = example_cases_answers[index]
+            actual_output = described_class.new(input_string).decode_output
+
+            expect(actual_output).to eql expected_output
+          end
+        end
+      end
+    end
   end
 end

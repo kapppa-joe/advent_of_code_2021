@@ -1,3 +1,4 @@
+require 'set'
 module Day08
   SegmentDict = {
     0 => 'abcefg',
@@ -30,9 +31,98 @@ module Day08
       Day08.count_1478_in_one_line(output_signal)
     end.sum
   end
+  
+  def self.sum_all_decoded_outputs(input_array)
+    input_array.map do |input_string|
+      SegmentDisplay.new(input_string).decode_output
+    end.sum
+  end
 
   class SegmentDisplay
+    def initialize(input_string)
+      @ten_digits_patterns, @output_signal = Day08.parse_input_string(input_string)
+    end
 
+    def zero
+      @zero ||= @ten_digits_patterns.find do |pattern|
+        pattern.size == 6 && pattern != six && pattern != nine
+      end
+    end
+
+    def one
+      @one ||= @ten_digits_patterns.find { |pattern| pattern.size == 2 }
+    end
+
+    def two
+      @two ||= @ten_digits_patterns.find do |pattern|
+        pattern.size == 5 && pattern != three && pattern != five
+      end
+    end
+
+    def three
+      @three ||= @ten_digits_patterns.find do |pattern|
+        pattern.size == 5 && superset_of?(pattern, one)
+      end
+    end
+
+    def four
+      @four ||= @ten_digits_patterns.find { |pattern| pattern.size == 4 }
+    end
+
+    def five
+      @five ||= @ten_digits_patterns.find do |pattern|
+        pattern.size == 5 && superset_of?(six, pattern)
+      end
+    end
+
+    def six
+      @six ||= @ten_digits_patterns.find do |pattern|
+        pattern.size == 6 && !superset_of?(pattern, one)
+      end
+    end
+
+    def seven
+      @seven ||= @ten_digits_patterns.find { |pattern| pattern.size == 3 }
+    end
+
+    def eight
+      @eight ||= @ten_digits_patterns.find { |pattern| pattern.size == 7 }
+    end
+
+    def nine
+      @nine ||= @ten_digits_patterns.find do |pattern|
+        pattern.size == 6 && superset_of?(pattern, four)
+      end
+    end
+
+    def superset_of?(pattern_a, pattern_b)
+      pattern_b.chars - pattern_a.chars == []
+    end
+
+    def match_pattern(pattern_a, pattern_b)
+      pattern_a.chars.to_set == pattern_b.chars.to_set
+    end
+
+    def to_pattern(digit)
+      raise IndexError unless (0..9).cover?(digit)
+
+      @to_pattern ||= [zero, one, two, three, four, five, six, seven, eight, nine]
+      @to_pattern[digit]
+    end
+
+    def find_matching_digit(signal_pattern)
+      (0..9).find do |digit|
+        match_pattern(signal_pattern, to_pattern(digit))
+      end
+    end
+
+    def decode_output
+      decoded_digits = @output_signal.map do |signal_pattern|
+        find_matching_digit(signal_pattern)
+      end
+
+      decoded_digits.join('').to_i
+    end
   end
 end
 
@@ -43,8 +133,8 @@ if __FILE__ == $PROGRAM_NAME
   part_a_solution = Day08.count_1478s_in_all_entries(input_array)
   puts "solution for part A: #{part_a_solution}"
 
-  # part_b_solution = predict_fish_counts(input_string, 256)
-  # puts "solution for part B: #{part_b_solution}"
+  part_b_solution = Day08.sum_all_decoded_outputs(input_array)
+  puts "solution for part B: #{part_b_solution}"
 end
 
 
@@ -75,6 +165,15 @@ stroke -> number
 
 2 stroke -> 1
 3 stroke -> 7
+7 stroke -> 8
+4 stroke -> 4
+6 stroke and not subseting 1 -> 6
+6 stroke and subseting 4 -> 9
+6 stroke and not 6,9 -> 0
+5 stroke and is subset of 6 -> 5
+5 stroke and is subset of 9 -> 3
+5 stroke and not 5,3 -> 2
+
 2 stroke -> seg c or f
 3 stroke - 2 stroke -> seg a
 4 stroke - 2 stroke -> seg b or d
