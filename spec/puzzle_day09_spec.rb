@@ -35,13 +35,13 @@ describe Day09::SmokeBasin do
     end
   end
 
-  describe '#each_neighbour_of' do
+  describe '#height_of_each_neighbour' do
     it 'yield the values of (1, 0), (0, 1) when given (0, 0)' do
       input = [0, 0]
       expected_yield_args = [1, 3]
 
       expect do |block|
-        smoke_basin.each_neighbour_of(*input, &block)
+        smoke_basin.height_of_each_neighbour(*input, &block)
       end.to yield_successive_args(*expected_yield_args)
     end
 
@@ -50,7 +50,7 @@ describe Day09::SmokeBasin do
       expected_yield_args = [1, 9, 3]
 
       expect do |block|
-        smoke_basin.each_neighbour_of(*input, &block)
+        smoke_basin.height_of_each_neighbour(*input, &block)
       end.to yield_successive_args(*expected_yield_args)
     end
 
@@ -59,7 +59,7 @@ describe Day09::SmokeBasin do
       expected_yield_args = [8, 6, 8, 4]
 
       expect do |block|
-        smoke_basin.each_neighbour_of(*input, &block)
+        smoke_basin.height_of_each_neighbour(*input, &block)
       end.to yield_successive_args(*expected_yield_args)
     end
 
@@ -74,7 +74,7 @@ describe Day09::SmokeBasin do
       test_cases.each do |input, expected_yield_args|
         it "test case for #{input}" do
           expect do |block|
-            smoke_basin.each_neighbour_of(*input, &block)
+            smoke_basin.height_of_each_neighbour(*input, &block)
           end.to yield_successive_args(*expected_yield_args)
         end
       end
@@ -120,6 +120,103 @@ describe Day09::SmokeBasin do
     it 'solve the example case correctly' do
       expected_output = 15
       expect(smoke_basin.sum_risk_factor).to eql expected_output
+    end
+  end
+
+  describe '#measure_basin_at' do
+    context 'simple map' do
+      test_map = [
+        '999',
+        '299',
+        '191'
+      ]
+
+      it 'returns 0 if given coordinate has a height of 9' do
+        input = [0, 0]
+        expected_output = 0
+        actual_output = Day09::SmokeBasin.new(test_map).measure_basin_at(*input)
+
+        expect(actual_output).to eql expected_output
+      end
+
+      it 'returns 1 if given coordinate has a height of less than 9 and is surrounded by height 9' do
+        input = [2, 2]
+        expected_output = 1
+
+        actual_output = Day09::SmokeBasin.new(test_map).measure_basin_at(*input)
+
+        expect(actual_output).to eql expected_output
+      end
+
+      it 'returns 0 if given coordinate is included in the set seen' do
+        seen = Set.new
+        input = [2, 2]
+        seen.add(input)
+        expected_output = 0
+
+        actual_output = Day09::SmokeBasin.new(test_map).measure_basin_at(*input, seen)
+
+        expect(actual_output).to eql expected_output
+      end
+
+      it 'returns 2 if given coordinate is a part of basin with size two' do
+        input = [0, 2]
+        expected_output = 2
+
+        actual_output = Day09::SmokeBasin.new(test_map).measure_basin_at(*input)
+
+        expect(actual_output).to eql expected_output
+      end
+    end
+
+    context 'example map' do
+      it 'returns 3 for the basin at top left corner' do
+        input = [1, 0]
+        expected_output = 3
+
+        expect(smoke_basin.measure_basin_at(*input)).to eql expected_output
+      end
+
+      it 'returns 9 for the basin at top right corner' do
+        input = [9, 0]
+        expected_output = 9
+
+        expect(smoke_basin.measure_basin_at(*input)).to eql expected_output
+      end
+
+      it 'return 14 for the basin at middle-left' do
+        input = [2, 2]
+        expected_output = 14
+
+        expect(smoke_basin.measure_basin_at(*input)).to eql expected_output
+      end
+
+      it 'return 9 for the basin at bottom right corner' do
+        input = [9, 4]
+        expected_output = 9
+
+        expect(smoke_basin.measure_basin_at(*input)).to eql expected_output
+      end
+    end
+  end
+
+  describe '#find_all_basins' do
+    it 'solve the example case correctly' do
+      expected_output = {
+        [1, 0] => 3,
+        [9, 0] => 9,
+        [2, 2] => 14,
+        [6, 4] => 9
+      }
+
+      expect(smoke_basin.find_all_basins).to eql expected_output
+    end
+  end
+
+  describe '#largest_basins_area_product' do
+    it 'solve the example case correctly' do
+      expected_output = 1134
+      expect(smoke_basin.largest_basins_area_product).to eql expected_output
     end
   end
 end
