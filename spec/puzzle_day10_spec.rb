@@ -97,12 +97,62 @@ describe Day10::SyntaxScore do
     end
   end
 
-  describe '#total_syntax_score acceptance test' do
-    it 'solve the example case correctly' do
-      input = example_case_of_day_10
-      expected_output = 26397
+  describe '#score_incomplete_chars' do
+    it 'return 0 when given an empty array' do
+      expect(subject.score_incomplete_chars([])).to eql 0
+    end
 
-      expect(subject.total_syntax_score(input)).to eql expected_output
+    it 'return the points of each char when given an array with only one char' do
+      test_cases = {
+        [')'] => 1,
+        [']'] => 2,
+        ['}'] => 3,
+        ['>'] => 4
+      }
+      test_cases.each do |input, expected_output|
+        expect(subject.score_incomplete_chars(input)).to eql expected_output
+      end
+    end
+
+    it 'multiply the points successively by 5' do
+      input = '])}>'.chars
+      expected_output = 294
+
+      expect(subject.score_incomplete_chars(input)).to eql expected_output
+    end
+
+    describe 'solves the example cases correctly' do
+      test_cases = {
+        '}}]])})]' => 288_957,
+        ')}>]})' => 5566,
+        '}}>}>))))' => 1_480_781,
+        ']]}}]}]}>' => 995_444
+      }
+
+      test_cases.each do |string, expected_output|
+        it "test case: #{string}, expected output: #{expected_output}" do
+          input = string.chars
+          expect(subject.score_incomplete_chars(input)).to eql expected_output
+        end
+      end
+    end
+  end
+
+  describe '#illegal_strings_total_scores acceptance test' do
+    it 'solve the example case of part A correctly' do
+      input = example_case_of_day_10
+      expected_output = 26_397
+
+      expect(subject.illegal_strings_total_scores(input)).to eql expected_output
+    end
+  end
+
+  describe '#incomplete_strings_middle_score acceptance test' do
+    it 'solve the example case of part B correctly' do
+      input = example_case_of_day_10
+      expected_output = 288957
+
+      expect(subject.incomplete_strings_middle_score(input)).to eql expected_output
     end
   end
 end

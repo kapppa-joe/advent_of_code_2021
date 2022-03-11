@@ -14,7 +14,17 @@ module Day10
       end
     end
 
-    class Incomplete end
+    class Incomplete
+      attr_reader :open_brackets
+
+      def initialize(open_brackets)
+        @open_brackets = open_brackets
+      end
+
+      def eql?(other)
+        other == self.class || other.instance_of?(self.class)
+      end
+    end
   end
 
   class SyntaxScore
@@ -32,6 +42,13 @@ module Day10
       '>' => 25_137
     }.freeze
 
+    INCOMPLETE_CHAR_SCORES = {
+      ')' => 1,
+      ']' => 2,
+      '}' => 3,
+      '>' => 4
+    }.freeze
+
     def analyse_string(str)
       stack = []
 
@@ -44,7 +61,7 @@ module Day10
         end
       end
 
-      stack.empty? ? Result::Ok : Result::Incomplete
+      stack.empty? ? Result::Ok : Result::Incomplete.new(stack)
     end
 
     def is_an_open_bracket?(char)
@@ -55,17 +72,45 @@ module Day10
       MATCHING_PAIRS[char_a] == char_b
     end
 
-    def score_single_line(string)
-      result = analyse_string(string)
+    def score_corrupted_string(result)
       return 0 unless result.instance_of?(Result::Corrupted)
 
       ILLEGAL_CHAR_SCORES[result.illegal_char]
     end
 
-    def total_syntax_score(input_array)
+    def illegal_strings_total_scores(input_array)
       input_array.map do |string|
-        score_single_line(string)
+        result = analyse_string(string)
+        score_corrupted_string(result)
       end.sum
+    end
+
+    def score_incomplete_string(result)
+      return 0 unless result.instance_of?(Result::Incomplete)
+
+      close_brackets_needed = result.open_brackets
+                                    .map { |char| MATCHING_PAIRS[char] }
+                                    .reverse
+      score_incomplete_chars(close_brackets_needed)
+    end
+
+    def score_incomplete_chars(chars)
+      return 0 if chars.empty?
+
+      current_char = chars.last
+      INCOMPLETE_CHAR_SCORES[current_char] + 5 * score_incomplete_chars(chars[0..-2])
+    end
+
+    def incomplete_strings_middle_score(input_array)
+      all_scores = input_array.map do |string|
+        result = analyse_string(string)
+        score_incomplete_string(result)
+      end
+
+      all_scores.filter!(&:positive?)
+                .sort!
+
+      all_scores[all_scores.length / 2]
     end
   end
 end
@@ -75,9 +120,9 @@ if __FILE__ == $PROGRAM_NAME
   input_array = read_input_file(10, 'string')
   scorer = Day10::SyntaxScore.new
 
-  part_a_solution = scorer.total_syntax_score(input_array)
+  part_a_solution = scorer.illegal_strings_total_scores(input_array)
   puts "solution for part A: #{part_a_solution}"
 
-  # part_b_solution = smoke_basin.largest_basins_area_product
-  # puts "solution for part B: #{part_b_solution}"
+  part_b_solution = scorer.incomplete_strings_middle_score(input_array)
+  puts "solution for part B: #{part_b_solution}"
 end
