@@ -24,6 +24,27 @@ describe Day12::PassagePathing do
     kj-dc
   ]
 
+  day12_even_larger_example = %w[
+    fs-end
+    he-DX
+    fs-he
+    start-DX
+    pj-DX
+    end-zg
+    zg-sl
+    zg-pj
+    pj-he
+    RW-he
+    fs-DX
+    pj-RW
+    zg-RW
+    start-pj
+    he-WI
+    zg-he
+    pj-fs
+    start-RW
+  ]
+
   let(:passage) { described_class.new(day12_basic_example) }
 
   describe '#make_graph' do
@@ -115,10 +136,8 @@ describe Day12::PassagePathing do
       end
     end
 
-    xcontext 'basic example' do
-      let(:passage) { described_class.new(day12_basic_example) }
-
-      it 'solve the basic example correctly' do
+    context 'test cases' do
+      it 'solves the basic example correctly' do
         expected_output = %w[
           start,A,b,A,c,A,end
           start,A,b,A,end
@@ -132,7 +151,42 @@ describe Day12::PassagePathing do
           start,b,end
         ]
 
-        expect(passage.search_paths).to eql expected_output
+        passage = described_class.new(day12_basic_example)
+        expect(passage.search_paths).to match_array expected_output
+      end
+
+      it 'solves the larger example correctly' do
+        expected_output = %w[
+          start,HN,dc,HN,end
+          start,HN,dc,HN,kj,HN,end
+          start,HN,dc,end
+          start,HN,dc,kj,HN,end
+          start,HN,end
+          start,HN,kj,HN,dc,HN,end
+          start,HN,kj,HN,dc,end
+          start,HN,kj,HN,end
+          start,HN,kj,dc,HN,end
+          start,HN,kj,dc,end
+          start,dc,HN,end
+          start,dc,HN,kj,HN,end
+          start,dc,end
+          start,dc,kj,HN,end
+          start,kj,HN,dc,HN,end
+          start,kj,HN,dc,end
+          start,kj,HN,end
+          start,kj,dc,HN,end
+          start,kj,dc,end
+        ]
+
+        passage = described_class.new(day12_larger_example)
+        expect(passage.search_paths).to match_array expected_output
+      end
+
+      it 'count the number of paths in the even larger example correctly' do
+        expected_length = 226
+
+        passage = described_class.new(day12_even_larger_example)
+        expect(passage.search_paths.length).to eql expected_length
       end
     end
   end

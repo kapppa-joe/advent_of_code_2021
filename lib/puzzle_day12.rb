@@ -20,26 +20,35 @@ module Day12
     end
 
     def search_paths(graph: @graph, curr: 'start', dest: 'end', visited: [])
+      return [[*visited, curr].join(',')] if curr == dest
+
+      next_nodes = possible_next_nodes(graph[curr], visited)
+      return [] if next_nodes.empty?
+
       path = visited.clone
       path << curr
-
-      if graph[curr].include?(dest)
-        path << dest
-        return [path.join(',')]
-      else
-        next_nodes = possible_next_nodes(graph[curr], visited)
-        return [] if next_nodes.empty?
-
-        recur_results = next_nodes.map do |next_node|
-          search_paths(
-            graph: graph,
-            curr: next_node,
-            dest: dest,
-            visited: path
-          )
-        end
-        recur_results.flatten
+      recur_results = next_nodes.map do |next_node|
+        search_paths(
+          graph: graph,
+          curr: next_node,
+          dest: dest,
+          visited: path
+        )
       end
+      recur_results.flatten
     end
   end
+end
+
+
+if __FILE__ == $PROGRAM_NAME
+  require_relative './utils'
+  input_array = read_input_file(12, 'string')
+  passage = Day12::PassagePathing.new(input_array)
+
+  part_a_solution = passage.search_paths.length
+  puts "solution for part A: #{part_a_solution}"
+
+  # part_b_solution = scorer.incomplete_strings_middle_score(input_array)
+  # puts "solution for part B: #{part_b_solution}"
 end
