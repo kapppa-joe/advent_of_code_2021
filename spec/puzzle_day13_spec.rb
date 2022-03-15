@@ -32,7 +32,7 @@ describe Day13::Origami do
     @example_fold_inst = origami[:folding_instruction]
   end
 
-  describe '#fold' do
+  describe '#fold_paper' do
     context 'minimal case of 3x3 paper' do
       it 'return empty array when given empty array' do
         input = []
@@ -147,6 +147,69 @@ describe Day13::Origami do
         expect(actual_output.length).to eql 16
         expect(actual_output).to match_array expected_output
       end
+    end
+  end
+
+  describe '#repeat_fold' do
+    it 'fold the paper repeatedly with given instructions' do
+      expected_output = [
+        [0, 0], [1, 0], [2, 0], [3, 0], [4, 0],
+        [0, 1], [0, 2], [0, 3], [0, 4], [1, 4],
+        [2, 4], [3, 4], [4, 4], [4, 3], [4, 2],
+        [4, 1]
+      ]
+      actual_output = subject.repeat_fold(@example_dots, @example_fold_inst)
+
+      expect(actual_output).to match_array expected_output
+    end
+  end
+
+  describe '#plot_dots' do
+    it 'returns string "*" when given [[0,0]]' do
+      input = [[0, 0]]
+      expected_output = '*'
+
+      expect(subject.plot_dots(input)).to eql expected_output
+    end
+
+    it 'returns string "**" when given [[0, 0], [1, 0]]' do
+      input = [[0, 0], [1, 0]]
+      expected_output = '**'
+
+      expect(subject.plot_dots(input)).to eql expected_output
+    end
+
+    it 'returns string "* *" when given [[0, 0], [2, 0]]' do
+      input = [[0, 0], [2, 0]]
+      expected_output = '* *'
+
+      expect(subject.plot_dots(input)).to eql expected_output
+    end
+
+    it 'returns string "*\n*" when given [[0, 0], [0, 1]]' do
+      input = [[0, 0], [0, 1]]
+      expected_output = "*\n*"
+
+      expect(subject.plot_dots(input)).to eql expected_output
+    end
+
+    it 'can plots more complex shape with multiple rows and columns' do
+      input = [
+        [0, 0], [1, 0], [2, 0], [3, 0], [4, 0],
+        [0, 1], [0, 2], [0, 3], [0, 4], [1, 4],
+        [2, 4], [3, 4], [4, 4], [4, 3], [4, 2],
+        [4, 1]
+      ]
+      expected_output =
+        <<~HEREDOC.chomp
+          *****
+          *   *
+          *   *
+          *   *
+          *****
+        HEREDOC
+
+      expect(subject.plot_dots(input)).to eql expected_output
     end
   end
 end

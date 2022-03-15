@@ -27,6 +27,12 @@ module Day13
       end.uniq.compact
     end
 
+    def repeat_fold(initial_dots, folding_instruction)
+      folding_instruction.reduce(initial_dots) do |dots, fold_inst|
+        fold_paper(dots, *fold_inst)
+      end
+    end
+
     def new_position(dot, axis, line)
       return nil if dot_on_the_folding_line?(dot, axis, line)
 
@@ -48,9 +54,28 @@ module Day13
     def mirror_position(position, line)
       line * 2 - position
     end
+
+    def plot_dots(dots)
+      paper = make_blank_paper(height(dots), width(dots))
+      dots.each do |x, y|
+        paper[y][x] = '*'
+      end
+      paper.join("\n")
+    end
+
+    def width(dots)
+      dots.map { |x, _y| x }.max + 1
+    end
+
+    def height(dots)
+      dots.map { |_x, y| y }.max + 1
+    end
+
+    def make_blank_paper(height, width)
+      Array.new(height) { ' ' * width }
+    end
   end
 end
-
 
 if __FILE__ == $PROGRAM_NAME
   require_relative './utils'
@@ -64,7 +89,7 @@ if __FILE__ == $PROGRAM_NAME
   part_a_solution = origami.fold_paper(dots, *folding_instruction[0]).length
   puts "solution for part A: #{part_a_solution}"
 
-  # part_b_instance = Day12::PassagePathingWithSecondVisit.new(input_array)
-  # part_b_solution = part_b_instance.search_paths.length
-  # puts "solution for part B: #{part_b_solution}"
+  dots_after_folding = origami.repeat_fold(dots, folding_instruction)
+  part_b_solution = origami.plot_dots(dots_after_folding)
+  puts "solution for part B: \n#{part_b_solution}"
 end
