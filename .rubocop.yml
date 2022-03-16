@@ -4,3 +4,10 @@ Metrics/BlockLength:
   IgnoredMethods: ['describe', 'context']
 Style/EachWithObject:
   Enabled: false
+Naming/MethodParameterName:
+  AllowedNames:
+    - x
+    - y
+    - z
+    - i
+    - n
