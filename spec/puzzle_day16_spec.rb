@@ -17,6 +17,17 @@ describe Day16::PacketDecoder do
       end
     end
   end
+
+  describe '::parse_binary_stream' do
+    it 'can parse a single literal packet' do
+      input = Day16::StreamIO.new('110100101111111000101000')
+      output = decoder.parse_binary_stream(input)
+
+      expect(output.ver).to eql 6
+      expect(output.type).to eql 4
+      expect(output.value).to eql 2021
+    end
+  end
 end
 
 describe Day16::StreamIO do
@@ -40,5 +51,14 @@ describe Day16::StreamIO do
       expect(stream.read(7)).to eql '0011100'
       expect(stream.read(15)).to eql '000000000011011'
     end
+  end
+end
+
+describe Day16::Packet do
+  let(:packet) { described_class.new }
+
+  it 'contains a version number and a type number' do
+    expect(packet.ver).to be_an(Integer)
+    expect(packet.type).to be_an(Integer)
   end
 end
