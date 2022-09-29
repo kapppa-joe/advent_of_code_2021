@@ -49,7 +49,7 @@ module Day15
       until to_visit.empty?
         curr = to_visit.pop
         visited.add(curr)
-        return scores[goal] if curr == goal
+        # return scores[goal] if curr == goal
 
         next_nodes = each_neighbour_of(*curr)
         next_nodes.each do |coord|
@@ -57,6 +57,8 @@ module Day15
           scores[coord] = [new_score, scores.fetch(coord, Float::INFINITY)].min
           to_visit.push(coord) unless visited.include?(coord)
         end
+
+        return scores[goal] if scores.key?(goal)
 
         to_visit = to_visit.uniq.sort_by { |coord| scores[coord] }.reverse
       end
