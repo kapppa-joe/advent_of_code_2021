@@ -1,3 +1,5 @@
+require 'pry'
+
 module Day15
   class Chiton
     def initialize(input_map = [''])
@@ -34,16 +36,28 @@ module Day15
     end
 
     def lowest_risk_path(start, goal)
-      total_score = 0
+      return 0 if start == goal
+
       scores = {}
-      curr = start
-      # next_nodes = 
+      scores[start] = 0
 
-      return total_score if start == goal
+      visited = Set[]
+      to_visit = [start]
 
-      (x, y) = goal
-      @map[y][x]
+      until to_visit.empty?
+        curr = to_visit.pop
+        visited.add(curr)
+        return scores[goal] if curr == goal
+
+        next_nodes = each_neighbour_of(*curr)
+        next_nodes.each do |coord|
+          new_score = value_of(*coord) + scores[curr]
+          scores[coord] = [new_score, scores.fetch(coord, Float::INFINITY)].min
+          to_visit.push(coord) unless visited.include?(coord)
+        end
+
+        to_visit = to_visit.uniq.sort_by { |coord| scores[coord] }.reverse
+      end
     end
   end
 end
-

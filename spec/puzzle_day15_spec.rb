@@ -81,7 +81,7 @@ describe Day15::Chiton do
         expect(chiton.lowest_risk_path(start, goal)).to eql expected_output
       end
 
-      xit 'return the risk value for moving 2 cells correctly' do
+      it 'return the risk value for moving 2 cells correctly' do
         start = [0, 0]
         goal = [1, 1]
         expected_output = 4
@@ -90,18 +90,17 @@ describe Day15::Chiton do
       end
     end
 
-    xdescribe 'acceptance test' do
+    describe 'acceptance test' do
       it 'solve the example case correctly' do
         map = day15_example
         start = [0, 0]
-        goal = [0, 0]
+        goal = [map[0].length - 1, map.length - 1]
         expected_output = 40
 
         actual_output = described_class.new(map).lowest_risk_path(start, goal)
-  
+
         expect(actual_output).to eql expected_output
       end
-      
     end
   end
 end
