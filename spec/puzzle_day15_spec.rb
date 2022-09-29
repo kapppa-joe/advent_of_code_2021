@@ -94,10 +94,9 @@ describe Day15::Chiton do
       it 'solve the example case correctly' do
         map = day15_example
         start = [0, 0]
-        goal = [map[0].length - 1, map.length - 1]
         expected_output = 40
 
-        actual_output = described_class.new(map).lowest_risk_path(start, goal)
+        actual_output = described_class.new(map).lowest_risk_path(start)
 
         expect(actual_output).to eql expected_output
       end

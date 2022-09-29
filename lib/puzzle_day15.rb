@@ -1,4 +1,4 @@
-require 'pry'
+require 'set'
 
 module Day15
   class Chiton
@@ -35,7 +35,9 @@ module Day15
       end
     end
 
-    def lowest_risk_path(start, goal)
+    def lowest_risk_path(start, goal = nil)
+      goal = [@x_limit - 1, @y_limit - 1] if goal.nil?
+
       return 0 if start == goal
 
       scores = {}
@@ -60,4 +62,14 @@ module Day15
       end
     end
   end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  require_relative './utils'
+  input_array = read_input_file(15, 'string')
+  chiton = Day15::Chiton.new(input_array)
+
+  part_a_solution = chiton.lowest_risk_path([0, 0])
+  puts "solution for part A: #{part_a_solution}"
+
 end
