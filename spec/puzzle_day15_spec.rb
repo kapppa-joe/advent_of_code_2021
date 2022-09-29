@@ -1,4 +1,5 @@
 require 'puzzle_day15'
+require 'utils'
 
 describe Day15::Chiton do
   day15_example = %w[
@@ -100,6 +101,140 @@ describe Day15::Chiton do
 
         expect(actual_output).to eql expected_output
       end
+    end
+
+    describe 'acceptance test' do
+      it 'compute the example of part B correctly' do
+        input = day15_example
+        expected_output = 315
+
+        expanded_map = Day15::MapExpand.new.expand(input)
+        start = [0, 0]
+        actual_output = described_class.new(expanded_map).lowest_risk_path(start)
+
+        expect(actual_output).to eql expected_output
+      end
+    end
+  end
+end
+
+describe Day15::MapExpand do
+  small_expanded_map_example =
+    %w[
+      89123
+      91234
+      12345
+      23456
+      34567
+    ]
+
+  let(:map_expand) { described_class.new }
+
+  describe '::rotate_num' do
+    test_cases = {
+      [1, 1] => 2,
+      [2, 1] => 3,
+      [9, 1] => 1,
+      [8, 2] => 1,
+      [5, 4] => 9,
+      [5, 5] => 1,
+      [7, 5] => 3
+    }
+
+    test_cases.each do |input_values, expected_output|
+      it "rotate num: #{input_values} gives #{expected_output}" do
+        expect(map_expand.rotate_num(*input_values)).to be(expected_output)
+      end
+    end
+  end
+
+  describe '::expand_to_x' do
+    it 'expand an int map across x axis 5 times' do
+      input = %w[
+        12
+        67
+      ]
+      expected = %w[
+        1223344556
+        6778899112
+      ]
+      actual = map_expand.expand_to_x(input)
+      expect(actual).to eql expected
+    end
+  end
+
+  describe '::expand_to_y' do
+    it 'expand an int map across y axis 5 times' do
+      input = %w[
+        12
+        67
+      ]
+      expected = %w[
+        12
+        67
+        23
+        78
+        34
+        89
+        45
+        91
+        56
+        12
+      ]
+      actual = map_expand.expand_to_y(input)
+      expect(actual).to eql expected
+    end
+  end
+
+  describe '::expand' do
+    it 'can expand the small example map correctly' do
+      input = ['8']
+      expected = small_expanded_map_example
+      actual = map_expand.expand(input)
+
+      expect(actual).to eql(expected)
+    end
+    it 'can expand a map of 1x2 correctly' do
+      input = %w[12]
+      expected = %w[
+        1223344556
+        2334455667
+        3445566778
+        4556677889
+        5667788991
+      ]
+      actual = map_expand.expand(input)
+
+      expect(actual).to eql(expected)
+    end
+
+    it 'can expand a map of 2x2 correctly' do
+      input = %w[12 67]
+      expected = %w[
+        1223344556
+        6778899112
+        2334455667
+        7889911223
+        3445566778
+        8991122334
+        4556677889
+        9112233445
+        5667788991
+        1223344556
+      ]
+      actual = map_expand.expand(input)
+
+      expect(actual).to eql(expected)
+    end
+
+    it 'can expand the example map correctly' do
+      examples = load_example_file(15, /\w+:/)
+
+      input = examples[0]
+      expected_output = examples[1]
+      actual = map_expand.expand(input)
+
+      expect(actual).to eql(expected_output)
     end
   end
 end

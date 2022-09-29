@@ -1,4 +1,5 @@
 require 'set'
+require 'pry'
 
 module Day15
   class Chiton
@@ -64,6 +65,38 @@ module Day15
       end
     end
   end
+
+  class MapExpand
+    def initialize() end
+
+    def expand(input_map)
+      expand_to_y(expand_to_x(input_map))
+    end
+
+    def expand_to_x(arr)
+      arr.map do |row|
+        5.times.map do |x|
+          rotate_num_str(row, x)
+        end.join('')
+      end
+    end
+
+    def expand_to_y(arr)
+      5.times.map do |y|
+        arr.map do |row|
+          rotate_num_str(row, y)
+        end
+      end.flatten
+    end
+
+    def rotate_num(num, diff)
+      ((num + diff - 1) % 9) + 1
+    end
+
+    def rotate_num_str(num_str, diff)
+      num_str.chars.map { |num_char| rotate_num(num_char.to_i, diff) }.join('')
+    end
+  end
 end
 
 if __FILE__ == $PROGRAM_NAME
@@ -73,5 +106,10 @@ if __FILE__ == $PROGRAM_NAME
 
   part_a_solution = chiton.lowest_risk_path([0, 0])
   puts "solution for part A: #{part_a_solution}"
+
+  expanded_map = Day15::MapExpand.new.expand(input_array)
+  chiton_expanded_map = Day15::Chiton.new(expanded_map)
+  part_b_solution = chiton_expanded_map.lowest_risk_path([0, 0])
+  puts "solution for part B: #{part_b_solution}"
 
 end
