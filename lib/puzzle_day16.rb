@@ -18,7 +18,7 @@ module Day16
       type = stream.read(3).to_i(2)
 
       if type == 4
-        packet = PacketLiteral.new(ver: ver, type: type, value: parse_literal_packet_value(stream))
+        packet = PacketLiteral.new(ver: ver, value: parse_literal_packet_value(stream))
       else
         packet = PacketOperator.new(ver: ver, type: type)
         parse_subpackets(stream).each { |subpacket| packet.add_subpacket(subpacket) }
@@ -38,14 +38,30 @@ module Day16
 
     def parse_subpackets(stream)
       length_type = stream.read(1)
-      raise NotImplementedError if length_type == '1'
+      case length_type
+      when '0'
+        parse_subpackets_type_zero(stream)
+      when '1'
+        parse_subpackets_type_one(stream)
+      else
+        raise 'error encountered when parsing subpackets'
+      end
+    end
 
+    def parse_subpackets_type_zero(stream)
       subpacket_bits_length = stream.read(15).to_i(2)
       subpacket_bits = stream.read(subpacket_bits_length)
       subpacket_stream = StreamIO.new(subpacket_bits)
 
       subpackets = []
       subpackets << parse_binary_stream(subpacket_stream, seek_hex_end: false) until subpacket_stream.eof?
+      subpackets
+    end
+
+    def parse_subpackets_type_one(stream)
+      subpacket_count = stream.read(11).to_i(2)
+      subpackets = []
+      subpackets << parse_binary_stream(stream, seek_hex_end: false) while subpackets.length < subpacket_count
       subpackets
     end
   end
@@ -105,20 +121,20 @@ module Day16
     end
   end
 
-  def self.PacketLiteral(ver, type, value)
-    PacketLiteral.new(ver: ver, type: type, value: value)
+  def self.PacketLiteral(ver, value)
+    PacketLiteral.new(ver: ver, value: value)
   end
 
   class PacketLiteral < Packet
     attr_accessor :ver, :type, :value
 
-    def initialize(ver: 0, type: 0, value: 0)
-      super(ver: ver, type: type)
+    def initialize(ver: 0, value: 0)
+      super(ver: ver, type: 4)
       @value = value
     end
 
     def ==(other)
-      other.is_a?(PacketLiteral) && @ver == other.ver && @type == other.type && @value == other.value
+      other.is_a?(PacketLiteral) && @ver == other.ver && @value == other.value
     end
   end
 end

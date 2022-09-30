@@ -62,18 +62,19 @@ describe Day16::PacketDecoder do
       subpackets = output.subpackets
 
       expect(subpackets.length).to eql 2
-      expect(subpackets[0]).to eq Day16::PacketLiteral(6, 4, 10)
-      expect(subpackets[1]).to eq Day16::PacketLiteral(2, 4, 20)
+      expect(subpackets[0]).to eq Day16::PacketLiteral(6, 10)
+      expect(subpackets[1]).to eq Day16::PacketLiteral(2, 20)
     end
 
-    xit 'can parse an operator packet of type 1 with subpackets' do
+    it 'can parse an operator packet of type 1 with subpackets' do
       input = 'EE00D40C823060'
       output = decoder.parse_hex_string(input)
       subpackets = output.subpackets
 
       expect(subpackets.length).to eql 3
-      # expect(subpackets[0]).to eq Day16::PacketLiteral(6, 4, 10)
-      # expect(subpackets[1]).to eq Day16::PacketLiteral(2, 4, 20)
+      expect(subpackets[0]).to eq Day16::PacketLiteral(2, 1)
+      expect(subpackets[1]).to eq Day16::PacketLiteral(4, 2)
+      expect(subpackets[2]).to eq Day16::PacketLiteral(1, 3)
     end
   end
 end
@@ -111,15 +112,13 @@ describe Day16::Packet do
   end
 
   it 'allows equality check between two literal packets' do
-    packet_a = Day16::PacketLiteral(1, 1, 2011)
-    packet_b = Day16::PacketLiteral(2, 1, 2011)
-    packet_c = Day16::PacketLiteral(1, 2, 2011)
-    packet_d = Day16::PacketLiteral(1, 1, 2012)
-    packet_e = Day16::PacketLiteral(1, 1, 2011)
+    packet_a = Day16::PacketLiteral(1, 2011)
+    packet_b = Day16::PacketLiteral(2, 2011)
+    packet_c = Day16::PacketLiteral(1, 2012)
+    packet_d = Day16::PacketLiteral(1, 2011)
 
-    expect(packet_a).to eq packet_e
+    expect(packet_a).to eq packet_d
     expect(packet_a).not_to eq packet_b
     expect(packet_a).not_to eq packet_c
-    expect(packet_a).not_to eq packet_d
   end
 end
