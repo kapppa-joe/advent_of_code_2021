@@ -207,29 +207,5 @@ describe Day16::Packet do
         expect(actual_output).to eq expected
       end
     end
-
-    # it 'type 0: sum packets' do
-    #   input = 'C200B40A82'
-    #   expected = 3
-
-    #   actual_output = build_packet(input).value
-    #   expect(actual_output).to eq expected
-    # end
-
-    # it 'type 1: product packets' do
-    #   input = '04005AC33890'
-    #   expected = 54
-
-    #   actual_output = build_packet(input).value
-    #   expect(actual_output).to eq expected
-    # end
-
-    # it 'type 2: minimum packets' do
-    #   input = '880086C3E88112'
-    #   expected = 7
-
-    #   actual_output = build_packet(input).value
-    #   expect(actual_output).to eq expected
-    # end
   end
 end
