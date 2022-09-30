@@ -144,6 +144,11 @@ end
 
 describe Day16::Packet do
   let(:packet) { described_class.new }
+  let(:decoder) { Day16::PacketDecoder.new }
+
+  def build_packet(hex_string)
+    decoder.parse_hex_string(hex_string)
+  end
 
   it 'contains a version number and a type number' do
     expect(packet.ver).to be_an(Integer)
@@ -179,5 +184,52 @@ describe Day16::Packet do
       actual_output = packet.sum_packet_versions
       expect(actual_output).to eq expected
     end
+  end
+
+  describe 'operator packet compute values' do
+    test_cases = [
+      { type: 'sum packets', input: 'C200B40A82', expected: 3 },
+      { type: 'product packets', input: '04005AC33890', expected: 54 },
+      { type: 'minimum packets', input: '880086C3E88112', expected: 7 },
+      { type: 'maximum packets', input: 'CE00C43D881120', expected: 9 },
+      { type: 'greater than packets', input: 'D8005AC2A8F0', expected: 1 },
+      { type: 'less than packets', input: 'F600BC2D8F', expected: 0 },
+      { type: 'equal to packets', input: '9C005AC2F8F0', expected: 0 },
+      { type: 'combination', input: '9C0141080250320F1802104A08', expected: 1 }
+    ]
+
+    test_cases.each do |params|
+      it "type: #{params[:type]}" do
+        input = params[:input]
+        expected = params[:expected]
+
+        actual_output = build_packet(input).value
+        expect(actual_output).to eq expected
+      end
+    end
+
+    # it 'type 0: sum packets' do
+    #   input = 'C200B40A82'
+    #   expected = 3
+
+    #   actual_output = build_packet(input).value
+    #   expect(actual_output).to eq expected
+    # end
+
+    # it 'type 1: product packets' do
+    #   input = '04005AC33890'
+    #   expected = 54
+
+    #   actual_output = build_packet(input).value
+    #   expect(actual_output).to eq expected
+    # end
+
+    # it 'type 2: minimum packets' do
+    #   input = '880086C3E88112'
+    #   expected = 7
+
+    #   actual_output = build_packet(input).value
+    #   expect(actual_output).to eq expected
+    # end
   end
 end

@@ -121,6 +121,7 @@ module Day16
     def initialize(ver: 0, type: 0)
       super(ver: ver, type: type)
       @subpackets = []
+      @subpackets_values = nil
     end
 
     def add_subpacket(subpacket)
@@ -138,7 +139,44 @@ module Day16
     end
 
     def sum_packet_versions
-      @ver + @subpackets.map { |packet| packet.sum_packet_versions }.sum
+      @ver + @subpackets.map(&:sum_packet_versions).sum
+    end
+
+    def subpackets_values
+      @subpackets_values ||= @subpackets.map(&:value)
+    end
+
+    def value
+      case @type
+      when 0 # sum type
+        subpackets_values.sum
+      when 1 # product type
+        subpackets_values.reduce(&:*)
+      when 2 # minimum type
+        subpackets_values.min
+      when 3
+        subpackets_values.max
+      when 5, 6, 7
+        raise unless subpackets.length == 2
+
+        a, b = subpackets_values
+        binary_operator_value(a, b)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def binary_operator_value(a, b)
+      case @type
+      when 5
+        a > b ? 1 : 0
+      when 6
+        a < b ? 1 : 0
+      when 7
+        a == b ? 1 : 0
+      else
+        raise NotImplementedError
+      end
     end
   end
 
@@ -173,4 +211,6 @@ if __FILE__ == $PROGRAM_NAME
   part_a_solution = packet.sum_packet_versions
   puts "solution for part A: #{part_a_solution}"
 
+  part_b_solution = packet.value
+  puts "solution for part B: #{part_b_solution}"
 end
