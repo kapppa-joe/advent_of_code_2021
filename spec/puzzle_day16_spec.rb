@@ -100,6 +100,21 @@ describe Day16::PacketDecoder do
       expect(packet[0].length).to eq 2
       expect(packet.sum_packet_versions).to eq 12
     end
+
+    it 'solves the 3rd example correctly' do
+      input = 'C0015000016115A2E0802F182340'
+      packet = decoder.parse_hex_string(input)
+
+      expect(packet.sum_packet_versions).to eq 23
+    end
+
+    it 'solves the 4rd example correctly' do
+      input = 'A0016C880162017C3686B18A3D4780'
+      packet = decoder.parse_hex_string(input)
+
+      expect(packet[0][0].length).to eq 5
+      expect(packet.sum_packet_versions).to eq 31
+    end
   end
 end
 

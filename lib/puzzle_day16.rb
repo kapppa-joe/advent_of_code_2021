@@ -46,6 +46,9 @@ module Day16
       when '1'
         parse_subpackets_type_one(stream)
       else
+        # puts(stream.eof?, "<-- this")
+        return [] if stream.eof?
+
         raise 'error encountered when parsing subpackets'
       end
     end
@@ -159,4 +162,15 @@ module Day16
       @ver
     end
   end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  require_relative './utils'
+  input_string = read_input_file(16, 'string').first
+  decoder = Day16::PacketDecoder.new
+  packet = decoder.parse_hex_string(input_string)
+
+  part_a_solution = packet.sum_packet_versions
+  puts "solution for part A: #{part_a_solution}"
+
 end
