@@ -88,15 +88,17 @@ describe Day16::PacketDecoder do
       expect(packet[0][0].ver).to eq 5
       expect(packet[0][0][0].ver).to eq 6
       expect(packet[0][0][0]).to be_a(Day16::PacketLiteral)
+
+      expect(packet.sum_packet_versions).to eq 16
     end
 
-    it 'solves the 2nd example correctly' do 
+    it 'solves the 2nd example correctly' do
       input = '620080001611562C8802118E34'
       packet = decoder.parse_hex_string(input)
 
       expect(packet.ver).to eq 3
       expect(packet[0].length).to eq 2
-
+      expect(packet.sum_packet_versions).to eq 12
     end
   end
 end
@@ -152,5 +154,15 @@ describe Day16::Packet do
     expect(packet[0]).to eq Day16::PacketLiteral(1, 123)
     expect(packet[1]).to eq Day16::PacketLiteral(2, 456)
     expect(packet.length) == 2
+  end
+
+  describe '#sum_packet_versions' do
+    it 'return the sum of packet versions (including itself and all children packets)' do
+      packet = Day16::PacketDecoder.new.parse_hex_string('8A004A801A8002F478')
+      expected = 16
+
+      actual_output = packet.sum_packet_versions
+      expect(actual_output).to eq expected
+    end
   end
 end

@@ -106,6 +106,10 @@ module Day16
       @ver = ver
       @type = type
     end
+
+    def sum_packet_versions
+      raise NotImplementedError
+    end
   end
 
   class PacketOperator < Packet
@@ -129,6 +133,10 @@ module Day16
     def length
       @subpackets.length
     end
+
+    def sum_packet_versions
+      @ver + @subpackets.map { |packet| packet.sum_packet_versions }.sum
+    end
   end
 
   def self.PacketLiteral(ver, value)
@@ -145,6 +153,10 @@ module Day16
 
     def ==(other)
       other.is_a?(PacketLiteral) && @ver == other.ver && @value == other.value
+    end
+
+    def sum_packet_versions
+      @ver
     end
   end
 end
