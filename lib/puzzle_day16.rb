@@ -1,4 +1,6 @@
-require 'pry'
+# require 'pry'
+# require 'pry-byebug'
+# require_relative './pry_monkey_patch'
 
 module Day16
   class PacketDecoder
@@ -118,6 +120,14 @@ module Day16
       raise ArgumentError('argument must be of packet class') unless subpacket.is_a?(Packet)
 
       @subpackets << subpacket
+    end
+
+    def [](key)
+      @subpackets[key]
+    end
+
+    def length
+      @subpackets.length
     end
   end
 

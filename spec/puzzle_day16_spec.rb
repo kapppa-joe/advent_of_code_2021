@@ -77,6 +77,28 @@ describe Day16::PacketDecoder do
       expect(subpackets[2]).to eq Day16::PacketLiteral(1, 3)
     end
   end
+
+  describe 'Acceptance test' do
+    it 'solves the 1st example correctly' do
+      input = '8A004A801A8002F478'
+      packet = decoder.parse_hex_string(input)
+
+      expect(packet.ver).to eq 4
+      expect(packet[0].ver).to eq 1
+      expect(packet[0][0].ver).to eq 5
+      expect(packet[0][0][0].ver).to eq 6
+      expect(packet[0][0][0]).to be_a(Day16::PacketLiteral)
+    end
+
+    it 'solves the 2nd example correctly' do 
+      input = '620080001611562C8802118E34'
+      packet = decoder.parse_hex_string(input)
+
+      expect(packet.ver).to eq 3
+      expect(packet[0].length).to eq 2
+
+    end
+  end
 end
 
 describe Day16::StreamIO do
@@ -120,5 +142,15 @@ describe Day16::Packet do
     expect(packet_a).to eq packet_d
     expect(packet_a).not_to eq packet_b
     expect(packet_a).not_to eq packet_c
+  end
+
+  it 'allow accessing subpackets with [] notation' do
+    packet = Day16::PacketOperator.new(ver: 1, type: 1)
+    packet.add_subpacket(Day16::PacketLiteral(1, 123))
+    packet.add_subpacket(Day16::PacketLiteral(2, 456))
+
+    expect(packet[0]).to eq Day16::PacketLiteral(1, 123)
+    expect(packet[1]).to eq Day16::PacketLiteral(2, 456)
+    expect(packet.length) == 2
   end
 end
