@@ -11,3 +11,7 @@ Naming/MethodParameterName:
     - z
     - i
     - n
+    - dx
+    - dy
+Style/ParallelAssignment:
+  Enabled: false

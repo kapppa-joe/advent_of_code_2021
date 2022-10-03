@@ -11,11 +11,6 @@ describe Day17::TrickShot do
   end
 
   describe '#shoot' do
-    it 'returns an enumerator' do
-      shot = trickshot.shoot(7, 2)
-      expect(shot).to be_an(Enumerator)
-    end
-
     it 'gives the position after first step correctly' do
       shot = trickshot.shoot(7, 2)
       expected = [7, 2]
@@ -48,8 +43,14 @@ describe Day17::TrickShot do
 
       shot.next
 
-      expect(shot.next[1]).to eql 2 + 3
-      expect(shot.next[1]).to eql 2 + 3 + 4
+      expect(shot.next[1]).to eql 2 + 1
+      expect(shot.next[1]).to eql 2 + 1 + 0
+    end
+
+    it 'stop iteration after the shoot fall within target area' do
+      shot = trickshot.shoot(7, 2)
+      6.times { shot.next }
+      expect { shot.next }.to raise_exception(StopIteration)
     end
   end
 end
