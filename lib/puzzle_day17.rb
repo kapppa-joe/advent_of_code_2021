@@ -1,12 +1,20 @@
 module Day17
-  module ShotState
+  module Status
     FLYING = 0
     HIT = 1
     MISS = 2
   end
 
+  module HelperFunction
+    def in_target_area?(x, y)
+      @x_range.include?(x) && @y_range.include?(y)
+    end
+  end
+
   class TrickShot
     attr_reader :x_range, :y_range
+
+    include HelperFunction
 
     def initialize(x_range, y_range)
       correct_order = lambda do |range|
@@ -21,29 +29,19 @@ module Day17
       @y_range = correct_order[y_range]
     end
 
-    def shoot(dx, dy)
-      Shot.new(dx, dy, x_range, y_range)
-      # return to_enum(:shoot, dx, dy) unless block_given?
+    def shoot(dx, dy, hold: true)
+      shot = Shot.new(dx, dy, x_range, y_range)
+      return shot if hold
 
-      # x = 0
-      # y = 0
-
-      # loop do
-      #   x += dx
-      #   y += dy
-      #   unless dx.zero?
-      #     dx += dx.positive? ? -1 : 1
-      #   end
-      #   dy -= 1
-      #   return if in_target_area?(x, y)
-
-      #   yield x, y
-      # end
+      shot.runs_to_end
+      shot
     end
   end
 
   class Shot
     attr_reader :x, :y
+
+    include HelperFunction
 
     def initialize(dx, dy, x_range, y_range)
       @x, @y = 0, 0
@@ -51,11 +49,7 @@ module Day17
       @dy = dy
       @x_range = x_range
       @y_range = y_range
-      @state = ShotState::FLYING
-    end
-
-    def in_target_area?(x, y)
-      @x_range.include?(x) && @y_range.include?(y)
+      @state = Status::FLYING
     end
 
     def next
@@ -63,16 +57,48 @@ module Day17
       @y += @dy
       @dx = damping(@dx)
       @dy -= 1
-
-      @state = ShotState::HIT if in_target_area?(x, y)
-
       [x, y]
+    end
+
+    def runs_to_end
+      while @state == Status::FLYING
+        self.next
+
+        if in_target_area?(x, y)
+          @state = Status::HIT
+        elsif no_hope_to_hit?
+          @state = Status::MISS
+        end
+      end
     end
 
     def damping(dx)
       return dx if dx.zero?
 
       dx + (dx.positive? ? -1 : 1)
+    end
+
+    def hits?
+      raise if @state == Status::FLYING
+
+      @state == Status::HIT
+    end
+
+    def no_hope_to_hit?
+      # consider x & y separately
+      if @dy <= 0 && @y < @y_range.first
+        return true
+      end
+
+      if @dx.zero?
+        return !@x_range.include?(@x)
+      elsif @x_range.all?(&:positive?) && @dx.negative?
+        return true
+      elsif @x_range.all?(&:negative?) && @dx.positive?
+        return true
+      end
+
+      false
     end
   end
 end

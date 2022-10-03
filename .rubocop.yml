@@ -4,6 +4,10 @@ Metrics/BlockLength:
   IgnoredMethods: ['describe', 'context']
 Style/EachWithObject:
   Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/ParallelAssignment:
+  Enabled: false
 Naming/MethodParameterName:
   AllowedNames:
     - x
@@ -13,5 +17,3 @@ Naming/MethodParameterName:
     - n
     - dx
     - dy
-Style/ParallelAssignment:
-  Enabled: false
