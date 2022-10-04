@@ -330,98 +330,26 @@ describe Day17::TrickShot do
     end
   end
 
-  describe '#guess_valid_init_y_for_given_x returns a valid init y that hits' do
-    it 'basic example [20..30, -10..-5], init_x = 7' do
-      input_init_x = 7
-      actual = trickshot.guess_valid_init_y_for_given_x(input_init_x)
-      validate_shooter = Day17::TrickShot.new(20..30, -10..-5)
-      expect(validate_shooter.shoot(input_init_x, actual).hits?).to be true
+  describe '#find_all_possible_init_velocity return a collection of all init velocity that hits the target range' do
+    it 'basic example' do
+      expected = 112
+      actual = trickshot.find_all_possible_init_velocity.length
+
+      expect(actual).to eq expected
     end
 
-    it 'test case [-16..9, 43..73], x = 2' do
-      input_init_x = 2
-      params = [-16..9, 43..73]
-      actual = Day17::TrickShot.new(*params).guess_valid_init_y_for_given_x(input_init_x)
-      validate_shooter = Day17::TrickShot.new(*params)
-      expect(validate_shooter.shoot(input_init_x, actual).hits?).to be true
+    describe 'random test' do
+      10.times do
+        it '' do
+          test_shooter = generate_random_case
+          actual = test_shooter.find_all_possible_init_velocity
+          expect(actual).to all(satisfy('hits the target range') do |dx, dy|
+            test_shooter.shoot_can_hit?(dx, dy)
+          end)
+        end
+      end
     end
   end
-
-  # describe 'random tests' do
-  #   100.times do
-  #     it "check assumption. preset: #{test_shooter}" do
-  #       test_shooter = generate_random_case
-  #       lower_x = test_shooter.x_range.first
-  #       lower_y = test_shooter.y_range.first
-  #       expect(test_shooter.shoot_can_hit?(lower_x, lower_y)).to eq true
-  #     end
-  #   end
-  # end
-
-  # xdescribe '#valid_y_range_for_given_x returns a valid range of init y' do
-  #   describe 'preset cases' do
-  #     it 'basic case [20..30, -10..-5], x = 7' do
-  #       actual = trickshot.valid_y_range_for_given_x(7)
-  #       expect(actual).to eq Range.new(-1, 9)
-  #     end
-
-  #     it 'basic case [20..30, -10..-5], x = 9' do
-  #       actual = trickshot.valid_y_range_for_given_x(9)
-  #       expect(actual).to eq Range.new(-2, 0)
-  #     end
-
-  #     it 'basic case [20..30, -10..-5], x = 6' do
-  #       actual = trickshot.valid_y_range_for_given_x(6)
-  #       expect(actual).to eq 0..9
-  #     end
-
-  #     it 'test case [-16..9, 43..73], x = 2' do
-  #       test_trickshot = Day17::TrickShot.new(-16..9, 43..73)
-  #       actual = test_trickshot.valid_y_range_for_given_x(2)
-  #       expect(actual).to eq 9..73
-  #     end
-  #   end
-
-  #   xdescribe 'random tests' do
-  #     x0, y0 = rand(100) - 50, rand(100) - 50
-  #     x1, y1 = x0 + rand(50), y0 + rand(50)
-  #     it "returns correct range for random params: #{[x0..x1, y0..y1]}" do
-  #       test_trickshot = Day17::TrickShot.new(x0..x1, y0..y1)
-  #       min_init_x = test_trickshot.min_init_x_speed
-  #       max_init_x = test_trickshot.max_init_x_speed
-  #       init_x = min_init_x + rand(max_init_x - min_init_x)
-
-  #       result = test_trickshot.valid_y_range_for_given_x(init_x)
-  #       lower_y, upper_y = result.first, result.last
-
-  #       validate_shooter = Day17::TrickShot.new(x0..x1, y0..y1)
-  #       expect(validate_shooter.shoot(init_x, lower_y).hits?).to eq true
-  #       expect(validate_shooter.shoot(init_x, upper_y).hits?).to eq true
-  #     end
-  #   end
-  # end
-
-  # xdescribe 'For any valid target range, the set of max init x and min init y should guaranteed to hit' do
-  #   describe 'preset test cases' do
-  #     test_cases = [
-  #       [20..30, -10..-5],
-  #       [10..20, 20..30],
-  #       [-5..10, -10..-5],
-  #       [-20..-10, 2..10],
-  #       [5..5, 10..10]
-  #     ]
-  #     test_cases.each do |params|
-  #       it "params: #{params}" do
-  #         trick_shot = described_class.new(*params)
-  #         max_x, min_y = trick_shot.max_init_x_speed, trick_shot.min_init_y_speed
-  #         shot = trick_shot.shoot(max_x, min_y)
-  #         puts shot.inspect
-  #         shot.runs_to_end
-  #         expect(shot.hits?).to be true
-  #       end
-  #     end
-  #   end
-  # end
 end
 
 describe Day17::Shot do

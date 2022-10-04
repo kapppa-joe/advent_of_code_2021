@@ -122,9 +122,6 @@ module Day17
     def find_highest_y_position
       raise ArgumentError('target range spans accross 0. highest y position will be infinite') if x_range.include?(0)
 
-      starting_params = [@x_range.first, @y_range.first]
-      raise RuntimeError('invalid params found') unless shoot_can_hit?(*starting_params)
-
       viable_upper_x_limit = max_turns_until_x_velocity_reach_zero
       optimal_turns = viable_upper_x_limit
       viable_y_range = viable_init_y_range_in_n_turns(optimal_turns)
@@ -138,16 +135,6 @@ module Day17
       optimal_shot.highest_y_position
     end
 
-    def guess_valid_init_y_for_given_x(init_x)
-      raise 'given init x is out of possible range' if init_x < min_init_x_speed
-
-      trials = min_init_y_speed..(min_init_y_speed.abs * 16)
-      result = trials.find { |init_y| shoot_can_hit?(init_x, init_y) }
-      raise unless result
-
-      result
-    end
-
     def valid_y_range_for_given_x(init_x)
       raise 'given init x is out of possible range' if init_x < min_init_x_speed
 
@@ -156,6 +143,16 @@ module Day17
       right = b.downto(left).to_a.bsearch { |init_y| shoot_can_hit?(init_x, init_y) }
 
       left..right
+    end
+
+    def find_all_possible_init_velocity
+      combinations_to_test = (min_init_x_speed..max_init_x_speed).reduce([]) do |acc, init_x|
+        valid_y_range = valid_y_range_for_given_x(init_x)
+        acc << [init_x].product(valid_y_range.to_a) if valid_y_range.size
+      rescue ArgumentError
+        acc
+      end.flatten(1)
+      combinations_to_test.filter { |dx, dy| shoot_can_hit?(dx, dy) }
     end
   end
 
@@ -238,5 +235,8 @@ if __FILE__ == $PROGRAM_NAME
   trickshot = Day17::TrickShot.new(input_ranges[0]..input_ranges[1], input_ranges[2]..input_ranges[3])
   part_a_solution = trickshot.find_highest_y_position
   puts "solution for part A: #{part_a_solution}"
+
+  part_b_solution = trickshot.find_all_possible_init_velocity.length
+  puts "solution for part B: #{part_b_solution}"
 
 end
