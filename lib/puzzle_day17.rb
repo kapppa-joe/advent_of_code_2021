@@ -73,6 +73,16 @@ module Day17
       shot.hits?
     end
 
+    def guess_valid_init_y_for_given_x(init_x)
+      raise 'given init x is out of possible range' if init_x < min_init_x_speed
+
+      trials = min_init_y_speed..(min_init_y_speed.abs * 16)
+      result = trials.find { |init_y| shoot_can_hit?(init_x, init_y) }
+      raise unless result
+
+      result
+    end
+
     def valid_y_range_for_given_x(init_x)
       raise 'given init x is out of possible range' if init_x < min_init_x_speed
 
