@@ -148,7 +148,7 @@ module Day17
     def find_all_possible_init_velocity
       combinations_to_test = (min_init_x_speed..max_init_x_speed).reduce([]) do |acc, init_x|
         valid_y_range = valid_y_range_for_given_x(init_x)
-        acc << [init_x].product(valid_y_range.to_a) if valid_y_range.size
+        acc << [init_x].product(valid_y_range.to_a) if valid_y_range.any?
       rescue ArgumentError
         acc
       end.flatten(1)
