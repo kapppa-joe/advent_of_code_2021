@@ -4,15 +4,19 @@ def pair(a, b)
   Day18::Pair.new(a, b)
 end
 
+def parse_literal(str)
+  Day18::SnailfishMaths.parse_literal(str)
+end
+
 describe Day18::SnailfishMaths do
-  let(:parse_literal) { ->(str) { described_class.parse_literal(str) } }
+  # let(:parse_literal) { ->(str) { described_class.parse_literal(str) } }
 
   describe '::parse_literal' do
     it 'convert a string notation of a simple pair' do
       input = '[1,2]'
       expected = pair(1, 2)
 
-      actual = parse_literal.call(input)
+      actual = parse_literal(input)
 
       expect(actual).to eq expected
     end
@@ -21,7 +25,7 @@ describe Day18::SnailfishMaths do
       input = '[012,3405]'
       expected = pair(12, 3405)
 
-      actual = parse_literal.call(input)
+      actual = parse_literal(input)
 
       expect(actual).to eq expected
     end
@@ -33,7 +37,7 @@ describe Day18::SnailfishMaths do
         3
       )
 
-      actual = parse_literal.call(input)
+      actual = parse_literal(input)
 
       expect(actual).to eq expected
     end
@@ -45,7 +49,7 @@ describe Day18::SnailfishMaths do
         pair(8, 7)
       )
 
-      actual = parse_literal.call(input)
+      actual = parse_literal(input)
 
       expect(actual).to eq expected
     end
@@ -57,7 +61,7 @@ describe Day18::SnailfishMaths do
         pair(pair(pair(4, 9), pair(6, 9)), pair(pair(8, 2), pair(7, 3)))
       )
 
-      actual = parse_literal.call(input)
+      actual = parse_literal(input)
       expect(actual).to eq expected
     end
   end
@@ -268,7 +272,12 @@ describe Day18::Node do
       node = node.to_right
     end
 
-    
+    node = test_tree.right.right
+
+    expected_numbers.reverse.each do |expected|
+      expect(node.num).to eq expected
+      node = node.to_left
+    end
   end
 
   describe '#leftmost' do
@@ -281,8 +290,8 @@ describe Day18::Node do
       expect(leftmost_node.num).to eq 9
       expect(leftmost_node.to_left).to eq nil
 
-      leftmost_node2 = test_tree.leftmost_node
-      expect(leftmost_node2.num).to eq 9
+      leftmost_node = test_tree.leftmost_node
+      expect(leftmost_node.num).to eq 9
     end
   end
 
@@ -295,6 +304,75 @@ describe Day18::Node do
 
       test_tree.each_node.with_index do |node, index|
         expect(node.num).to eq expected[index]
+      end
+    end
+  end
+
+  describe '#should_explode?' do
+    it 'return true iff its pair is nested inside four pairs' do
+      input = '[[6,[5,[4,[3,2]]]],1]'
+      test_tree = Day18::SnailfishMaths.parse_literal(input)
+
+      node = test_tree.left.left
+      expect(node.num).to eq 6
+      expect(node.should_explode?).to eq false
+
+      node = test_tree.left.right.right.left
+      expect(node.num).to eq 4
+      expect(node.should_explode?).to eq false
+
+      node = test_tree.left.right.right.right.left
+      expect(node.num).to eq 3
+      expect(node.should_explode?).to eq true
+    end
+  end
+
+  describe '#should_split?' do
+    it 'return true iff a literal number is >= 10' do
+      input = '[[[[0,7],4],[15,[0,10]]],[1,1]]'
+      test_tree = Day18::SnailfishMaths.parse_literal(input)
+
+      test_tree.each_node do |node|
+        expect(node.should_split?).to eq(node.num == 15 || node.num == 10)
+      end
+    end
+  end
+
+  describe '#explode' do
+    it 'carry out the explode action at a node' do
+      tree = parse_literal('[[[[[9,8],1],2],3],4]')
+      node_to_explode = tree.left.left.left.left.left
+      expected = parse_literal('[[[[0,9],2],3],4]')
+
+      node_to_explode.explode
+
+      expect(tree).to eq expected
+    end
+
+    it 'raise an error if the pair does not consist of two regular numbers' do
+      tree = parse_literal('[[[[[9,8],1],2],3],4]')
+      node_to_explode = tree.left.left.left
+      expect { node_to_explode.explode }.to raise_error(RuntimeError)
+    end
+  end
+
+  describe '#run_explode_action' do
+    describe 'it explode the leftmost number that should explode' do
+      test_cases = {
+        '[7,[6,[5,[4,[3,2]]]]]' => '[7,[6,[5,[7,0]]]]',
+        '[[6,[5,[4,[3,2]]]],1]' => '[[6,[5,[7,0]]],3]',
+        '[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]' => '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]',
+        '[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]' => '[[3,[2,[8,0]]],[9,[5,[7,0]]]]'
+      }
+      test_cases.each do |input, expected|
+        it "test case: #{input} => #{expected}" do
+          tree = parse_literal(input)
+          expected_tree = parse_literal(expected)
+
+          tree.run_explode_action
+
+          expect(tree).to eq expected_tree
+        end
       end
     end
   end

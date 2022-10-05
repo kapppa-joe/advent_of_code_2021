@@ -1,6 +1,7 @@
 module Day18
   class SnailfishMaths
     def self.find_matching_brackets(str)
+      # implemented but turns out not necessary at all :) ...
       dict = {}
       stack = []
       str.chars.each_with_index do |chr, index|
@@ -16,23 +17,27 @@ module Day18
     end
 
     def self.parse_literal(str)
-      # convert literal representation to Pair object
+      # convert literal representation to a tree of Pair objects
       curr_num = nil
       stack = []
 
       str.chars.each do |chr|
         case chr
         when '0'..'9'
-          curr_num = curr_num.nil? ? chr.to_i : curr_num * 10 + chr.to_i
+          curr_num = if curr_num.nil?
+                       chr.to_i
+                     else
+                       curr_num * 10 + chr.to_i
+                     end
         when '['
           stack.push(Pair.new(nil, nil))
         when ','
           curr_pair = stack.last
-          curr_pair.insert(curr_num) if curr_num
+          curr_pair.insert(curr_num) unless curr_num.nil?
           curr_num = nil
         when ']'
           curr_pair = stack.last
-          curr_pair.insert(curr_num) if curr_num
+          curr_pair.insert(curr_num) unless curr_num.nil?
           curr_num = nil
           if stack.length > 1
             curr_pair = stack.pop
@@ -65,35 +70,6 @@ module Day18
 
     def right?
       !root? && @parent.right.eql?(self)
-    end
-
-    def to_left
-      return nil if root?
-
-      # seek common parent
-      node = self
-      node = node.parent while node.left?
-
-      # return nil if it is already the rightmost node
-      return nil if node.root?
-
-      # drill down the right branch and seek the leftmost literal node
-      node = node.parent.left
-      node = node.right while node.is_a?(Day18::Pair)
-      node
-    end
-
-    def to_right
-      return nil if root?
-
-      node = self
-      node = node.parent while node.right?
-
-      return nil if node.root?
-
-      node = node.parent.right
-      node = node.left while node.is_a?(Day18::Pair)
-      node
     end
 
     def leftmost_node
@@ -131,6 +107,10 @@ module Day18
       @level = 1
     end
 
+    def two_regular_numbers?
+      @left.is_a?(Literal) && @right.is_a?(Literal)
+    end
+
     def wrap(node)
       node.is_a?(Integer) ? Literal.new(node) : node
     end
@@ -157,8 +137,12 @@ module Day18
       @left == other.left && @right == other.right
     end
 
-    def to_s
+    def inspect
       "#<Pair \n#{indenter}left : #{@left}, \n#{indenter}right: #{@right}>"
+    end
+
+    def to_s
+      "[#{@left},#{@right}]"
     end
 
     def indenter
@@ -169,6 +153,42 @@ module Day18
       @level += 1
       @left.inc_level
       @right.inc_level
+    end
+
+    def run_explode_action
+      raise 'should run explode action from root' unless root?
+
+      each_node do |node|
+        if node.should_explode?
+          node.explode
+          return true
+        end
+      end
+
+      false
+    end
+
+    def explode
+      raise 'trying to explode a pair with nested pair inside' if @left.is_a?(Day18::Pair) || @right.is_a?(Day18::Pair)
+
+      @left.to_left&.add(@left.num)
+      @right.to_right&.add(@right.num)
+      replace_self_with_zero
+    end
+
+    def delete_left
+      @left = nil
+    end
+
+    def delete_right
+      @right = nil
+    end
+
+    def replace_self_with_zero
+      raise 'try to replace root with zero' if root?
+
+      left? ? @parent.delete_left : @parent.delete_right
+      @parent.insert(0)
     end
   end
 
@@ -183,6 +203,10 @@ module Day18
       @num.to_s
     end
 
+    def add(new_num)
+      @num += new_num
+    end
+
     def ==(other)
       return false unless other.is_a?(Literal)
 
@@ -193,6 +217,47 @@ module Day18
 
     def level
       @parent.level
+    end
+
+    def to_left
+      return nil if root?
+
+      # seek common parent
+      node = self
+      node = node.parent while node.left?
+
+      # return nil if it is already the rightmost node
+      return nil if node.root?
+
+      # drill down the right branch and seek the leftmost literal node
+      node = node.parent.left
+      node = node.right while node.is_a?(Day18::Pair)
+      node
+    end
+
+    def to_right
+      return nil if root?
+
+      node = self
+      node = node.parent while node.right?
+
+      return nil if node.root?
+
+      node = node.parent.right
+      node = node.left while node.is_a?(Day18::Pair)
+      node
+    end
+
+    def should_explode?
+      level > 4 && @parent.two_regular_numbers?
+    end
+
+    def should_split?
+      @num >= 10
+    end
+
+    def explode
+      @parent.explode
     end
   end
 end
