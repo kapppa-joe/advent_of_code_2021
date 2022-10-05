@@ -9,8 +9,6 @@ def parse_literal(str)
 end
 
 describe Day18::SnailfishMaths do
-  # let(:parse_literal) { ->(str) { described_class.parse_literal(str) } }
-
   describe '::parse_literal' do
     it 'convert a string notation of a simple pair' do
       input = '[1,2]'
@@ -130,10 +128,67 @@ describe Day18::SnailfishMaths do
       expect(actual).to eq expected
     end
   end
+
+  describe '::add_two_pairs' do
+    it 'handle basic example correctly' do
+      pair_a = parse_literal('[[[[4,3],4],4],[7,[[8,4],9]]]')
+      pair_b = parse_literal('[1,1]')
+      expected = parse_literal('[[[[0,7],4],[[7,8],[6,0]]],[8,1]]')
+
+      actual = described_class.add_two_pairs(pair_a, pair_b)
+
+      expect(actual).to eq expected
+    end
+  end
+
+  describe '::sum_list_from_strings' do
+    describe 'basic examples' do
+      input_list = %w[
+        [1,1]
+        [2,2]
+        [3,3]
+        [4,4]
+        [5,5]
+        [6,6]
+      ]
+      expected_results = {
+        4 => '[[[[1,1],[2,2]],[3,3]],[4,4]]',
+        5 => '[[[[3,0],[5,3]],[4,4]],[5,5]]',
+        6 => '[[[[5,0],[7,4]],[5,5]],[6,6]]'
+      }
+      expected_results.each do |take_length, expected|
+        it '' do
+          expected_tree = parse_literal(expected)
+          input = input_list[0...take_length]
+          actual = described_class.sum_list_from_strings(input)
+        end
+      end
+    end
+
+    it 'solves larger example correctly' do
+      input_list = %w[
+        [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+        [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
+        [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
+        [[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
+        [7,[5,[[3,8],[1,4]]]]
+        [[2,[2,2]],[8,[8,1]]]
+        [2,9]
+        [1,[[[9,3],9],[[9,0],[0,7]]]]
+        [[[5,[7,4]],7],1]
+        [[[[4,2],2],6],[8,7]]
+      ]
+
+      expected = parse_literal('[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]')
+
+      actual = described_class.sum_list_from_strings(input_list)
+
+      expect(actual).to eq expected
+    end
+  end
 end
 
 describe Day18::Pair do
-  let(:parse_literal) { ->(str) { Day18::SnailfishMaths.parse_literal(str) } }
   describe '#==' do
     it 'compares simple pairs correctly' do
       pair_a = described_class.new(1, 2)
@@ -147,14 +202,14 @@ describe Day18::Pair do
 
   describe '#level' do
     it 'return how deeply nested a pair is' do
-      pair_a = parse_literal.call('[1, 2]')
+      pair_a = parse_literal('[1, 2]')
       expect(pair_a.level).to eq 1
 
-      pair_b = parse_literal.call('[[1,2],3]')
+      pair_b = parse_literal('[[1,2],3]')
       expect(pair_b.level).to eq 1
       expect(pair_b.left.level).to eq 2
 
-      pair_c = parse_literal.call('[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]')
+      pair_c = parse_literal('[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]')
       expect(pair_c.level).to eq 1
       expect(pair_c.left.level).to eq 2
       expect(pair_c.left.right.level).to eq 3
@@ -162,7 +217,7 @@ describe Day18::Pair do
     end
 
     it 'a literal num has the same level as its parent pair' do
-      tree = parse_literal.call('[[[[1,2],[3,4]],[[5,6],[7,8]]],9]')
+      tree = parse_literal('[[[[1,2],[3,4]],[[5,6],[7,8]]],9]')
 
       node = tree.left.left.left.left
       expect(node.num).to eq 1
@@ -171,6 +226,35 @@ describe Day18::Pair do
       8.times { node = node.to_right }
       expect(node.num).to eq 9
       expect(node.level).to eq 1
+    end
+  end
+
+  describe '#magnitude' do
+    describe 'calculate the magnitude of a pair correctly' do
+      test_cases = [
+        ['[9,1]', 29],
+        ['[[9,1],[1,9]]', 129],
+        ['[[1,2],[[3,4],5]]', 143],
+        ['[[[[0,7],4],[[7,8],[6,0]]],[8,1]]', 1384],
+        ['[[[[1,1],[2,2]],[3,3]],[4,4]]', 445],
+        ['[[[[3,0],[5,3]],[4,4]],[5,5]]', 791],
+        ['[[[[5,0],[7,4]],[5,5]],[6,6]]', 1137],
+        ['[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]', 3488],
+      ]
+      test_cases.each do |input, expected|
+        it "magnitude of #{input} => #{expected}" do
+          actual = parse_literal(input).magnitude
+          expect(actual).to eq expected
+        end
+      end
+    end
+
+    it 'calculate the larger example correctly' do
+      input = '[[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]]'
+      expected = 4140
+
+      actual = parse_literal(input).magnitude
+      expect(actual).to eq expected
     end
   end
 end
@@ -309,7 +393,7 @@ describe Day18::Node do
   end
 
   describe '#should_explode?' do
-    it 'return true iff its pair is nested inside four pairs' do
+    it 'return true iff a pair is nested inside four pairs and consist of only two literal numbers' do
       input = '[[6,[5,[4,[3,2]]]],1]'
       test_tree = Day18::SnailfishMaths.parse_literal(input)
 
@@ -357,7 +441,7 @@ describe Day18::Node do
   end
 
   describe '#run_explode_action' do
-    describe 'it explode the leftmost number that should explode' do
+    describe 'it explode the leftmost pair that should explode' do
       test_cases = {
         '[7,[6,[5,[4,[3,2]]]]]' => '[7,[6,[5,[7,0]]]]',
         '[[6,[5,[4,[3,2]]]],1]' => '[[6,[5,[7,0]]],3]',
@@ -372,7 +456,84 @@ describe Day18::Node do
           tree.run_explode_action
 
           expect(tree).to eq expected_tree
+          # verify that node levels are handle correctly
+          expected_tree_node = expected_tree.leftmost_node
+          tree.each_node do |tree_node|
+            expect(tree_node.level).to eq expected_tree_node.level
+            expected_tree_node = expected_tree_node.to_right
+          end
         end
+      end
+    end
+  end
+
+  describe '#split' do
+    it 'carry out split action at a node' do
+      input = '[[[[0,7],4],[15,[0,13]]],[1,1]]'
+      expected = '[[[[0,7],4],[[7,8],[0,13]]],[1,1]]'
+
+      tree = parse_literal(input)
+      expected_tree = parse_literal(expected)
+
+      node = tree.left.right.left
+      expect(node.num).to eq 15
+
+      node.split
+
+      expect(tree).to eq expected_tree
+
+      # verify that node levels are handle correctly
+      expected_tree_node = expected_tree.leftmost_node
+      tree.each_node do |tree_node|
+        expect(tree_node.level).to eq expected_tree_node.level
+        expected_tree_node = expected_tree_node.to_right
+      end
+    end
+  end
+
+  describe '#run_split_action' do
+    describe 'it split the leftmost number that should split' do
+      test_cases = {
+        '[[[[0,7],4],[15,[0,13]]],[1,1]]' => '[[[[0,7],4],[[7,8],[0,13]]],[1,1]]',
+        '[[[[0,7],4],[[7,8],[0,13]]],[1,1]]' => '[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]'
+      }
+      test_cases.each do |input, expected|
+        it "test case: #{input} => #{expected}" do
+          tree = parse_literal(input)
+          expected_tree = parse_literal(expected)
+
+          tree.run_split_action
+
+          expect(tree).to eq expected_tree
+
+          # verify that node levels are handle correctly
+          expected_tree_node = expected_tree.leftmost_node
+          tree.each_node do |tree_node|
+            expect(tree_node.level).to eq expected_tree_node.level
+            expected_tree_node = expected_tree_node.to_right
+          end
+        end
+      end
+    end
+  end
+
+  describe '#run_reduction' do
+    it 'run reduction on the example correctly' do
+      input = '[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]'
+      expected = '[[[[0,7],4],[[7,8],[6,0]]],[8,1]]'
+
+      tree = parse_literal(input)
+      expected_tree = parse_literal(expected)
+
+      tree.run_reduction
+
+      expect(tree).to eq expected_tree
+
+      # verify that node levels are handle correctly
+      expected_tree_node = expected_tree.leftmost_node
+      tree.each_node do |tree_node|
+        expect(tree_node.level).to eq expected_tree_node.level
+        expected_tree_node = expected_tree_node.to_right
       end
     end
   end

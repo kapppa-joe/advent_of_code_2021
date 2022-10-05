@@ -50,6 +50,20 @@ module Day18
 
       stack.pop
     end
+
+    def self.add_two_pairs(pair_a, pair_b)
+      new_pair = Pair.new(pair_a, pair_b)
+      new_pair.update_level
+      new_pair.run_reduction
+    end
+
+    def self.sum_list_from_strings(list_of_string)
+      list_of_string.map do |string|
+        parse_literal(string)
+      end.reduce do |curr_pair, new_pair| 
+        add_two_pairs(curr_pair, new_pair)
+      end
+    end
   end
 
   class Node
@@ -128,7 +142,7 @@ module Day18
       else
         raise RuntimeError('trying to insert into a fully filled pair')
       end
-      node.inc_level
+      node.update_level
     end
 
     def ==(other)
@@ -149,15 +163,13 @@ module Day18
       "|#{' ' * 4}" * @level
     end
 
-    def inc_level
-      @level += 1
-      @left.inc_level
-      @right.inc_level
+    def update_level
+      @level = root? ? 1 : @parent.level + 1
+      @left.update_level
+      @right.update_level
     end
 
     def run_explode_action
-      raise 'should run explode action from root' unless root?
-
       each_node do |node|
         if node.should_explode?
           node.explode
@@ -166,6 +178,34 @@ module Day18
       end
 
       false
+    end
+
+    def run_split_action
+      each_node do |node|
+        if node.should_split?
+          node.split
+          return true
+        end
+      end
+
+      false
+    end
+
+    def run_action_rules
+      # try run explode or split on the tree for once.
+      # if both action didn't fire, return false. else return true 
+
+      run_explode_action || run_split_action
+    end
+
+    def run_reduction
+      raise 'should run reduction from root' unless root?
+
+      loop do
+        action_taken = run_action_rules
+        # if action_taken is false, the tree is already fully reduced
+        return self unless action_taken 
+      end
     end
 
     def explode
@@ -190,6 +230,10 @@ module Day18
       left? ? @parent.delete_left : @parent.delete_right
       @parent.insert(0)
     end
+
+    def magnitude
+      @left.magnitude * 3 + @right.magnitude * 2
+    end
   end
 
   class Literal < Node
@@ -203,6 +247,10 @@ module Day18
       @num.to_s
     end
 
+    def magnitude
+      @num
+    end
+
     def add(new_num)
       @num += new_num
     end
@@ -213,7 +261,7 @@ module Day18
       @num == other.num
     end
 
-    def inc_level; end
+    def update_level; end
 
     def level
       @parent.level
@@ -259,5 +307,33 @@ module Day18
     def explode
       @parent.explode
     end
+
+    def split
+      new_left = @num / 2
+      new_right = @num / 2 + (@num.even? ? 0 : 1)
+      replace_self_with_pair(new_left, new_right)
+    end
+
+    def replace_self_with_pair(left, right)
+      raise 'try to replace root with zero' if root?
+
+      new_pair = Day18::Pair.new(left, right)
+      left? ? @parent.delete_left : @parent.delete_right
+      @parent.insert(new_pair)
+    end
   end
+end
+
+
+
+if __FILE__ == $PROGRAM_NAME
+  require_relative './utils'
+  input_array = read_input_file(18, 'string')
+  result_pair = Day18::SnailfishMaths.sum_list_from_strings(input_array)
+
+  part_a_solution = result_pair.magnitude
+  puts "solution for part A: #{part_a_solution}"
+
+  # part_b_solution = packet.value
+  # puts "solution for part B: #{part_b_solution}"
 end
