@@ -256,4 +256,46 @@ describe Day18::Node do
       expect(node.to_right).to eq nil
     end
   end
+
+  it '#to_left and #to_right works for non-fully occupied tree' do
+    input = '[[[9,[3,8]],[[0,9],6]],[[[3,7],[4,9]],3]]'
+    test_tree = Day18::SnailfishMaths.parse_literal(input)
+    expected_numbers = [9, 3, 8, 0, 9, 6, 3, 7, 4, 9, 3]
+
+    node = test_tree.left.left.left
+    expected_numbers.each do |expected|
+      expect(node.num).to eq expected
+      node = node.to_right
+    end
+
+    
+  end
+
+  describe '#leftmost' do
+    it 'returns the node at the leftmost' do
+      input = '[[[9,[3,8]],[[0,5],6]],[[[3,7],[4,3]],3]]'
+
+      test_tree = Day18::SnailfishMaths.parse_literal(input)
+      node = test_tree.left.right.left.right
+      leftmost_node = node.leftmost_node
+      expect(leftmost_node.num).to eq 9
+      expect(leftmost_node.to_left).to eq nil
+
+      leftmost_node2 = test_tree.leftmost_node
+      expect(leftmost_node2.num).to eq 9
+    end
+  end
+
+  describe '#each_node' do
+    it 'return an enum that traverse through each literal num node from left to' do
+      input = '[[[9,[3,8]],[[0,5],6]],[[[3,7],[4,3]],3]]'
+      test_tree = Day18::SnailfishMaths.parse_literal(input)
+
+      expected = [9, 3, 8, 0, 5, 6, 3, 7, 4, 3, 3]
+
+      test_tree.each_node.with_index do |node, index|
+        expect(node.num).to eq expected[index]
+      end
+    end
+  end
 end

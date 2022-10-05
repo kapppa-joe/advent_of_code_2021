@@ -40,6 +40,9 @@ module Day18
           end
         end
       end
+
+      raise ArgumentError("the input string doesn't compute to a valid pair") if stack.length != 1
+
       stack.pop
     end
   end
@@ -65,24 +68,25 @@ module Day18
     end
 
     def to_left
-      return @parent.left if right?
       return nil if root?
 
-      node = @parent
+      # seek common parent
+      node = self
       node = node.parent while node.left?
 
+      # return nil if it is already the rightmost node
       return nil if node.root?
 
+      # drill down the right branch and seek the leftmost literal node
       node = node.parent.left
       node = node.right while node.is_a?(Day18::Pair)
       node
     end
 
     def to_right
-      return @parent.right if left?
       return nil if root?
 
-      node = @parent
+      node = self
       node = node.parent while node.right?
 
       return nil if node.root?
@@ -90,6 +94,28 @@ module Day18
       node = node.parent.right
       node = node.left while node.is_a?(Day18::Pair)
       node
+    end
+
+    def leftmost_node
+      node = to_root
+      node = node.left until node.is_a?(Literal)
+      node
+    end
+
+    def to_root
+      node = self
+      node = node.parent until node.root?
+      node
+    end
+
+    def each_node
+      return to_enum(:each_node) unless block_given?
+
+      node = leftmost_node
+      until node.nil?
+        yield node
+        node = node.to_right
+      end
     end
   end
 
