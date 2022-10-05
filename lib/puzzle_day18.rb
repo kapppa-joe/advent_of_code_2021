@@ -23,7 +23,7 @@ module Day18
       str.chars.each do |chr|
         case chr
         when '0'..'9'
-          curr_num ||= chr.to_i
+          curr_num = curr_num.nil? ? chr.to_i : curr_num * 10 + chr.to_i
         when '['
           stack.push(Pair.new(nil, nil))
         when ','
@@ -44,17 +44,76 @@ module Day18
     end
   end
 
-  class Pair
+  class Node
+    attr_accessor :parent
+
+    def initialize
+      raise NotImplementedError
+    end
+
+    def root?
+      @parent.nil?
+    end
+
+    def left?
+      # false
+      !root? && @parent.left.eql?(self)
+    end
+
+    def right?
+      !root? && @parent.right.eql?(self)
+    end
+
+    def to_left
+      return @parent.left if right?
+      return nil if root?
+
+      node = @parent
+      node = node.parent while node.left?
+
+      return nil if node.root?
+
+      node = node.parent.left
+      node = node.right while node.is_a?(Day18::Pair)
+      node
+    end
+
+    def to_right
+      return @parent.right if left?
+      return nil if root?
+
+      node = @parent
+      node = node.parent while node.right?
+
+      return nil if node.root?
+
+      node = node.parent.right
+      node = node.left while node.is_a?(Day18::Pair)
+      node
+    end
+  end
+
+  class Pair < Node
     attr_reader :left, :right, :level
 
     def initialize(left = nil, right = nil)
-      @left = left
-      @right = right
+      @left = wrap(left)
+      @right = wrap(right)
+
+      @left.parent = self unless @left.nil?
+      @right.parent = self unless @left.nil?
       @level = 1
     end
 
+    def wrap(node)
+      node.is_a?(Integer) ? Literal.new(node) : node
+    end
+
     def insert(node)
-      raise ArgumentError unless node.is_a?(Pair) || node.is_a?(Integer)
+      raise ArgumentError unless node.is_a?(Pair) || node.is_a?(Literal) || node.is_a?(Integer)
+
+      node = wrap(node)
+      node.parent = self
 
       if @left.nil?
         @left = node
@@ -63,13 +122,13 @@ module Day18
       else
         raise RuntimeError('trying to insert into a fully filled pair')
       end
-      node.inc_level if node.is_a?(Pair)
+      node.inc_level
     end
 
     def ==(other)
       return false unless other.is_a?(Pair)
 
-      @left = other.left && @right == other.right
+      @left == other.left && @right == other.right
     end
 
     def to_s
@@ -82,8 +141,32 @@ module Day18
 
     def inc_level
       @level += 1
-      @left.inc_level if @left.is_a?(Pair)
-      @right.inc_level if @right.is_a?(Pair)
+      @left.inc_level
+      @right.inc_level
+    end
+  end
+
+  class Literal < Node
+    attr_reader :num
+
+    def initialize(num)
+      @num = num
+    end
+
+    def to_s
+      @num.to_s
+    end
+
+    def ==(other)
+      return false unless other.is_a?(Literal)
+
+      @num == other.num
+    end
+
+    def inc_level; end
+
+    def level
+      @parent.level
     end
   end
 end
