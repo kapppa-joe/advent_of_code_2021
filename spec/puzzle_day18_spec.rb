@@ -166,7 +166,7 @@ describe Day18::SnailfishMaths do
     end
 
     it 'solves larger example correctly' do
-      input_list = %w[
+      input = %w[
         [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
         [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
         [[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
@@ -178,10 +178,31 @@ describe Day18::SnailfishMaths do
         [[[5,[7,4]],7],1]
         [[[[4,2],2],6],[8,7]]
       ]
-
       expected = parse_literal('[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]')
 
-      actual = described_class.sum_list_from_strings(input_list)
+      actual = described_class.sum_list_from_strings(input)
+
+      expect(actual).to eq expected
+    end
+  end
+
+  describe '::max_magnitude_from_summing_any_two' do
+    it 'solve the larger example case correctly' do
+      input = %w[
+        [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+        [[[5,[2,8]],4],[5,[[9,9],0]]]
+        [6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+        [[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+        [[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+        [[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+        [[[[5,4],[7,7]],8],[[8,3],8]]
+        [[9,3],[[9,9],[6,[4,9]]]]
+        [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+        [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
+      ]
+      expected = 3993
+
+      actual = described_class.max_magnitude_from_summing_any_two(input)
 
       expect(actual).to eq expected
     end

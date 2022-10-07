@@ -60,9 +60,15 @@ module Day18
     def self.sum_list_from_strings(list_of_string)
       list_of_string.map do |string|
         parse_literal(string)
-      end.reduce do |curr_pair, new_pair| 
+      end.reduce do |curr_pair, new_pair|
         add_two_pairs(curr_pair, new_pair)
       end
+    end
+
+    def self.max_magnitude_from_summing_any_two(list_of_string)
+      list_of_string.permutation(2).map do |two_strings|
+        sum_list_from_strings(two_strings).magnitude
+      end.max
     end
   end
 
@@ -193,7 +199,7 @@ module Day18
 
     def run_action_rules
       # try run explode or split on the tree for once.
-      # if both action didn't fire, return false. else return true 
+      # if both action didn't fire, return false. else return true
 
       run_explode_action || run_split_action
     end
@@ -204,7 +210,7 @@ module Day18
       loop do
         action_taken = run_action_rules
         # if action_taken is false, the tree is already fully reduced
-        return self unless action_taken 
+        return self unless action_taken
       end
     end
 
@@ -324,8 +330,6 @@ module Day18
   end
 end
 
-
-
 if __FILE__ == $PROGRAM_NAME
   require_relative './utils'
   input_array = read_input_file(18, 'string')
@@ -334,6 +338,6 @@ if __FILE__ == $PROGRAM_NAME
   part_a_solution = result_pair.magnitude
   puts "solution for part A: #{part_a_solution}"
 
-  # part_b_solution = packet.value
-  # puts "solution for part B: #{part_b_solution}"
+  part_b_solution = Day18::SnailfishMaths.max_magnitude_from_summing_any_two(input_array)
+  puts "solution for part B: #{part_b_solution}"
 end
