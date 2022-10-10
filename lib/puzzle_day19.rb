@@ -2,7 +2,7 @@ require 'matrix'
 
 module Day19
   class ScannersMapper
-    attr_reader :stations
+    attr_reader :stations, :all_beacons
 
     def self.parse_input_list(input_list)
       current_scanner = nil
@@ -23,6 +23,7 @@ module Day19
 
     def initialize(input_list)
       @stations = self.class.parse_input_list(input_list)
+      @station_positions = []
     end
 
     def common_beacons_between_stations(a, b)
@@ -55,9 +56,9 @@ module Day19
       translation_component = station_a_beacon_1 - station_b_beacon_1_rotated
 
       to_base = ->(vec) { rotation_matrix * vec + translation_component }
-      from_base = ->(vec) { reverse_rotation_matrix * (vec - translation_component)}
-      
-      return to_base, from_base
+      from_base = ->(vec) { reverse_rotation_matrix * (vec - translation_component) }
+
+      [to_base, from_base]
     end
 
     def create_rotation_matrix(vec1, vec2)
@@ -75,22 +76,32 @@ module Day19
       Matrix.rows(rows_of_rotation_matrix)
     end
 
+    def combination_of_two_stations
+      @stations.length.times.to_a.combination(2)
+    end
+
     def build_stations_map
-      all_combinations = @stations.length.times.to_a.combination(2)
+      @inter_station_map ||= Hash.new { |h, k| h[k] = [] }
+      @beacons_relationship_map ||= Hash.new { |h, k| h[k] = [] }
+      @convertors ||= Hash.new { |h, k| h[k] = [] }
 
-      @inter_station_map = Hash.new { |h, k| h[k] = [] }
-      @beacons_relationship_map = Hash.new { |h, k| h[k] = [] }
-
-      all_combinations.each do |a, b|
+      combination_of_two_stations.each do |a, b|
         relation_map = common_beacons_between_stations(a, b)
         next if relation_map.empty?
 
-        @inter_station_map[a] << b
-        @inter_station_map[b] << a
-        @beacons_relationship_map["#{a}->#{b}"] = relation_map
+        build_map_between_two_stations(a, b, relation_map)
       end
 
       @inter_station_map
+    end
+
+    def build_map_between_two_stations(a, b, relation_map)
+      @inter_station_map[a] << b
+      @inter_station_map[b] << a
+      @beacons_relationship_map["#{a}->#{b}"] = relation_map
+      convertor_b_to_a, convertor_a_to_b = create_coordinate_convertor(a, b, relation_map)
+      @convertors["#{a}->#{b}"] = convertor_a_to_b
+      @convertors["#{b}->#{a}"] = convertor_b_to_a
     end
 
     def beacon_coords_to_string(list_of_vectors)
@@ -98,13 +109,91 @@ module Day19
     end
 
     def build_coordinate_convertors
-      puts build_stations_map
+      build_stations_map
+    end
+
+    def find_route_to_origin(starting_station, stations_map)
+      goal = 0
+      return [] if starting_station == goal
+
+      current_station = starting_station
+      visited = []
+      queue = stations_map[current_station].map { |next_station| [starting_station, next_station] }
+
+      until queue.empty?
+        route = queue.shift
+        current_station = route.last
+        neighbours = stations_map[current_station] - visited
+        return route if current_station == goal
+
+        visited.push(current_station)
+
+        neighbours.each do |neighbour|
+          queue.push(route + [neighbour])
+        end
+      end
+
+      raise 'Fail to find a route to origin'
+    end
+
+    def get_convertor(a, b)
+      raise unless @convertors["#{a}->#{b}"]
+
+      @convertors["#{a}->#{b}"]
+    end
+
+    def beacon_coords_relative_to_origin(station_num)
+      build_stations_map unless @inter_station_map
+
+      route = find_route_to_origin(station_num, @inter_station_map)
+      convertors_to_apply = route.each_cons(2).map { |a, b| get_convertor(a, b) }
+
+      @stations[station_num].beacons.map do |vec|
+        convertors_to_apply.each do |convertor|
+          vec = convertor.call(vec)
+        end
+        vec
+      end
     end
 
     def build_all_beacons_list
       build_stations_map
-      build_coordinate_convertors
-      []
+      @all_beacons = @stations[0].beacons.clone
+      (1...@stations.length).each do |station_num|
+        @all_beacons.push(*beacon_coords_relative_to_origin(station_num))
+      end
+
+      @all_beacons.uniq!
+      @all_beacons
+    end
+
+    def station_position(station_num)
+      return @station_positions[station_num] if @station_positions.include?(station_num)
+
+      build_stations_map unless @inter_station_map
+
+      route = find_route_to_origin(station_num, @inter_station_map)
+      convertors_to_apply = route.each_cons(2).map { |a, b| get_convertor(a, b) }
+      result = convertors_to_apply.reduce(Matrix.column_vector([0, 0, 0])) do |vec, convertor|
+        convertor.call(vec)
+      end
+
+      @station_positions[station_num] = result
+    end
+
+    def manhattan_distance(point_a, point_b)
+      (point_a - point_b).to_a.flatten.map(&:abs).sum
+    end
+
+    def max_manhattan_distance_between_two_stations
+      pair_with_distances = combination_of_two_stations.map do |a, b|
+        {
+          stations: [a, b],
+          manhattan_distance: manhattan_distance(station_position(a), station_position(b))
+        }
+      end
+
+      pair_with_distances.max_by { |pair| pair[:manhattan_distance] }
     end
   end
 
@@ -145,4 +234,18 @@ module Day19
       @beacons[key]
     end
   end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  require_relative './utils'
+  input_array = read_input_file(19, 'string')
+  stations_mapper = Day19::ScannersMapper.new(input_array)
+  stations_mapper.build_all_beacons_list
+
+  part_a_solution = stations_mapper.all_beacons.length
+  puts "solution for part A: #{part_a_solution}"
+
+  part_b_solution = stations_mapper.max_manhattan_distance_between_two_stations
+  puts "solution for part B: #{part_b_solution}"
+
 end
