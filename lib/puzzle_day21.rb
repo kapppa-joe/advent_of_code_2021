@@ -1,3 +1,5 @@
+require 'pry'
+
 module Day21
   class DiceGame
     attr_reader :number_of_dice_throw
@@ -54,34 +56,96 @@ module Day21
       @player_score.min * @number_of_dice_throw
     end
 
-    def game_status
+    def output_game_state
       {
         player1_score: player_score(1),
         player2_score: player_score(2),
         player1_position: player_position(1),
         player2_position: player_position(2),
-        current_player: @current_player
+        current_player: @current_player + 1
       }
     end
   end
 
   class DiracDice < DiceGame
-    # def tick
-    #   raise NotImplementedError
-    # end
+    def initialize
+      @cache = {}
+    end
 
-    def tick(game_state, next_dice)
-      game_state
+    def start_new_game(player1_position, player2_position)
+      { current_player: 1,
+        player1_position: player1_position,
+        player1_score: 0,
+        player2_position: player2_position,
+        player2_score: 0 }
+    end
+
+    def tick(game_state, dice_sum)
+      new_state = game_state.clone
+      current_player = game_state[:current_player]
+      new_position = game_state["player#{current_player}_position".to_sym] + dice_sum
+      new_position = (new_position % 10).zero? ? 10 : new_position % 10
+      new_score = game_state["player#{current_player}_score".to_sym] + new_position
+
+      new_state[:current_player] = 3 - current_player
+      new_state["player#{current_player}_position".to_sym] = new_position
+      new_state["player#{current_player}_score".to_sym] = new_score
+      new_state
     end
 
     def probability_distribution
       return @probability_distribution if @probability_distribution
 
-      result = (1..3).to_a.repeated_permutation(3).to_a.reduce(Hash.new(0)) do |hash, dices|
+      permutation_3by3 = (1..3).to_a.repeated_permutation(3).to_a
+      result = permutation_3by3.reduce(Hash.new(0)) do |hash, dices|
         hash[dices.sum] += 1
         hash
       end
       @probability_distribution = result
+    end
+
+    def get_winner(game_state)
+      winning_score = 21
+
+      if game_state[:player1_score] >= winning_score
+        :player1_wins
+      elsif game_state[:player2_score] >= winning_score
+        :player2_wins
+      end
+    end
+
+    def hash_game_state(game_state)
+      [
+        game_state[:player1_score],
+        game_state[:player2_score],
+        game_state[:player1_position],
+        game_state[:player2_position],
+        game_state[:current_player]
+      ].to_s.freeze
+    end
+
+    def sum_possible_outcomes_from_state(game_state)
+      hash_key = hash_game_state(game_state)
+      return @cache[hash_key] if @cache.has_key?(hash_key)
+
+      result = {
+        player1_wins: 0,
+        player2_wins: 0
+      }
+
+      probability_distribution.each do |dice_sum, weight|
+        next_state = tick(game_state, dice_sum)
+        winner = get_winner(next_state)
+        if winner
+          result[winner] += weight
+        else
+          recur_results = sum_possible_outcomes_from_state(next_state)
+          result.merge!(recur_results) { |_, a, b| a + weight * b }
+        end
+      end
+
+      @cache[hash_key] = result.clone
+      result
     end
   end
 end
@@ -95,15 +159,9 @@ if __FILE__ == $PROGRAM_NAME
   part_a_solution = game.part_a_solution
   puts "solution for part A: #{part_a_solution}"
 
-  game = Day21::DiceGame.new(4, 8)
-  puts game.game_status
-  20.times.map do
-    game.tick
-    puts game.game_status
-  end
-
-  # enhanced_50_times = 50.times.reduce(image) { |img| trench_map.enhance(img, algorithm) }
-  # part_b_solution = trench_map.count_lit_pixels(enhanced_50_times)
-  # puts "solution for part B: #{part_b_solution}"
+  dirac_dice = Day21::DiracDice.new
+  init_state = dirac_dice.start_new_game(*player_init_positions)
+  part_b_solution = dirac_dice.sum_possible_outcomes_from_state(init_state)
+  puts "solution for part B: #{part_b_solution}"
 
 end

@@ -102,33 +102,60 @@ describe Day21::DiceGame do
 end
 
 describe Day21::DiracDice do
-  let(:game) { described_class.new(4, 8) }
+  let(:game) { described_class.new }
 
   describe 'tick' do
     expected_results = [
       { player1_score: 0, player2_score: 0, player1_position: 4, player2_position: 8, current_player: 1 },
-      { player1_score: 10, player2_score: 0, player1_position: 10, player2_position: 8, current_player: 0 },
+      { player1_score: 10, player2_score: 0, player1_position: 10, player2_position: 8, current_player: 2 },
       { player1_score: 10, player2_score: 3, player1_position: 10, player2_position: 3, current_player: 1 },
-      { player1_score: 14, player2_score: 3, player1_position: 4, player2_position: 3, current_player: 0 },
+      { player1_score: 14, player2_score: 3, player1_position: 4, player2_position: 3, current_player: 2 },
       { player1_score: 14, player2_score: 9, player1_position: 4, player2_position: 6, current_player: 1 },
-      { player1_score: 20, player2_score: 9, player1_position: 6, player2_position: 6, current_player: 0 },
+      { player1_score: 20, player2_score: 9, player1_position: 6, player2_position: 6, current_player: 2 },
       { player1_score: 20, player2_score: 16, player1_position: 6, player2_position: 7, current_player: 1 },
-      { player1_score: 26, player2_score: 16, player1_position: 6, player2_position: 7, current_player: 0 },
+      { player1_score: 26, player2_score: 16, player1_position: 6, player2_position: 7, current_player: 2 },
       { player1_score: 26, player2_score: 22, player1_position: 6, player2_position: 6, current_player: 1 },
-      { player1_score: 30, player2_score: 22, player1_position: 4, player2_position: 6, current_player: 0 },
+      { player1_score: 30, player2_score: 22, player1_position: 4, player2_position: 6, current_player: 2 },
       { player1_score: 30, player2_score: 25, player1_position: 4, player2_position: 3, current_player: 1 },
-      { player1_score: 40, player2_score: 25, player1_position: 10, player2_position: 3, current_player: 0 },
+      { player1_score: 40, player2_score: 25, player1_position: 10, player2_position: 3, current_player: 2 },
       { player1_score: 40, player2_score: 33, player1_position: 10, player2_position: 8, current_player: 1 },
-      { player1_score: 44, player2_score: 33, player1_position: 4, player2_position: 8, current_player: 0 },
+      { player1_score: 44, player2_score: 33, player1_position: 4, player2_position: 8, current_player: 2 },
       { player1_score: 44, player2_score: 34, player1_position: 4, player2_position: 1, current_player: 1 },
-      { player1_score: 50, player2_score: 34, player1_position: 6, player2_position: 1, current_player: 0 },
+      { player1_score: 50, player2_score: 34, player1_position: 6, player2_position: 1, current_player: 2 },
       { player1_score: 50, player2_score: 36, player1_position: 6, player2_position: 2, current_player: 1 },
-      { player1_score: 56, player2_score: 36, player1_position: 6, player2_position: 2, current_player: 0 },
+      { player1_score: 56, player2_score: 36, player1_position: 6, player2_position: 2, current_player: 2 },
       { player1_score: 56, player2_score: 37, player1_position: 6, player2_position: 1, current_player: 1 },
-      { player1_score: 60, player2_score: 37, player1_position: 4, player2_position: 1, current_player: 0 },
+      { player1_score: 60, player2_score: 37, player1_position: 4, player2_position: 1, current_player: 2 },
       { player1_score: 60, player2_score: 45, player1_position: 4, player2_position: 8, current_player: 1 }
     ]
     it 'take a game state and next dice sum, return a new game state' do
+      input = expected_results[0]
+      expected = expected_results[1]
+
+      actual = game.tick(input, 1 + 2 + 3)
+
+      expect(actual).to eq expected
+    end
+
+    it 'can run the game same as simplified version' do
+      dice = (1..100).cycle
+      throw_dice = -> { 3.times.map { dice.next }.sum }
+
+      expected_results[0..-2].each_with_index do |game_state, i|
+        expected = expected_results[i + 1]
+        actual = game.tick(game_state, throw_dice.call)
+
+        expect(actual).to eq expected
+      end
+    end
+
+    it 'does not mutate the input game state' do
+      input = expected_results[0]
+      input_clone = input.clone
+
+      game.tick(input, 1 + 2 + 3)
+
+      expect(input).to eq input_clone
     end
   end
 
@@ -151,6 +178,79 @@ describe Day21::DiracDice do
         expected = simulation_result[dice_sum]
         expect(actual).to be_within(0.1).of(expected)
       end
+    end
+  end
+
+  describe 'hash_game_state' do
+    it 'extract the 5 variables of a game state as a unique hash key', long_test: true do
+      input = { player1_score: 12, player2_score: 20, player1_position: 5, player2_position: 7,
+                current_player: 1 }
+      expected = '[12, 20, 5, 7, 1]'
+
+      actual = game.hash_game_state(input)
+      expect(actual).to eq expected
+    end
+
+    it 'any unique game state have a unique hash' do
+      all_possible_states = (0..21).flat_map do |a|
+        (0..21).flat_map do |b|
+          (1..10).flat_map do |c|
+            (1..10).flat_map do |d|
+              (1..2).map do |e|
+                {
+                  player1_score: a, player2_score: b, player1_position: c, player2_position: d,
+                  current_player: e
+                }
+              end
+            end
+          end
+        end
+      end
+      outputs = all_possible_states.map { |game_state| game.hash_game_state(game_state) }
+      expect(outputs.uniq!).to be nil
+    end
+  end
+
+  describe 'start_new_game' do
+    it 'build an initial game state from given initial player positions' do
+      player_init_positions = [4, 8]
+      expected = { player1_score: 0, player2_score: 0, player1_position: 4, player2_position: 8,
+        current_player: 1 }
+
+      actual = game.start_new_game(*player_init_positions)
+      expect(actual).to eq expected
+    end
+  end
+
+  describe 'sum_possible_outcomes_from_state' do
+    it 'return the results of parallel universe game branching off from a given state' do
+      input_state = { player1_score: 12, player2_score: 20, player1_position: 10, player2_position: 10,
+                      current_player: 1 }
+      # player1 will win only if got dice total == 9, which happens only in 1/27
+      # Any other case (26/27) will lead to next turn, in which player 2 will certainly win in all 27 outcomes
+      # so player 2 wins in 26 * 27 universes while player 1 wins in 1
+      expected = {
+        player1_wins: 1,
+        player2_wins: 26 * 27
+      }
+      actual = game.sum_possible_outcomes_from_state(input_state)
+
+      expect(actual).to eq expected
+    end
+
+    it 'compute the example case correctly' do
+      input_state = {
+        player1_score: 0, player2_score: 0, player1_position: 4, player2_position: 8,
+        current_player: 1
+      }
+      expected = {
+        player1_wins: 444_356_092_776_315,
+        player2_wins: 341_960_390_180_808
+      }
+
+      actual = game.sum_possible_outcomes_from_state(input_state)
+
+      expect(actual).to eq expected
     end
   end
 end
