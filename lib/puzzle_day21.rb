@@ -67,7 +67,7 @@ module Day21
     end
   end
 
-  class DiracDice < DiceGame
+  class DiracDice
     def initialize
       @cache = {}
     end
@@ -126,7 +126,7 @@ module Day21
 
     def sum_possible_outcomes_from_state(game_state)
       hash_key = hash_game_state(game_state)
-      return @cache[hash_key] if @cache.has_key?(hash_key)
+      return @cache[hash_key] if @cache.key?(hash_key)
 
       result = {
         player1_wins: 0,
